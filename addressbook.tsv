@@ -9,8 +9,8 @@
 수서광주선,국가철도공단	국가철도공단	2025년 국정감사 업무현황	미기록	8	수서~광주 착공 계획	261114-suseo-gwangju/04.jpg
 경강선,수서광주선,중부내륙선,여주~원주	국가철도공단	보도자료 첨부 그림	미기록	-	경강선 본선 위 분기 개략도(노선도 계열)	261114-suseo-gwangju/05.jpg
 경강선 연장,용인,경기광주	용인시	보도자료 첨부 노선안	미기록	-	경강선 연장 노선안(노선도 계열)	261114-suseo-gwangju/06.jpg
-사이트:국토부	molit.go.kr	접속 메모	-	-	접속이 끊김 → 1회만 시도, 보도자료 첨부는 정책브리핑(korea.kr)에서 받기	-
-사이트:성남시·토지이음·환경영향평가	seongnam.go.kr, eum.go.kr, eiass.go.kr	접속 메모	-	-	각 1회만 시도, 실패하면 바로 넘어감(대체 경로 없음)	-
+사이트:국토부	molit.go.kr	접속 메모	-	-	2026-11-14 재시도 늘려도 매번 접속 직후 끊김(고정 차단으로 봄) → 시도하지 말고 korea.kr로 받기	-
+사이트:성남시·토지이음·환경영향평가	seongnam.go.kr, eum.go.kr, eiass.go.kr	접속 메모	-	-	2026-11-14: 성남시는 열림(302), 토지이음은 매번 끊김(고정 차단), 환경영향평가는 인증서 오류(보안검사 끄기 금지라 불가) → 토지이음·eiass는 시도하지 않음	-
 사이트:KDI 예타	pimac.kdi.re.kr	접속 메모	https://pimac.kdi.re.kr/study/study_view.jsp?pub_no=번호&classcd=F1	-	보고서 페이지에서 PDF 내려받기 가능했음. 공공누리 3유형: 사진 설명칸 출처 표시, 덧그리기 금지	-
 사이트:국가철도공단	kr.or.kr	접속 메모	https://www.kr.or.kr/boardCnts/list.do?boardID=51	-	게시판 제목 검색(searchType=title&searchStr=) 사용 기록	-
 사이트:용인시	yongin.go.kr	접속 메모	https://www.yongin.go.kr/user/bbs/BD_selectBbsList.do?q_bbsCode=1020	-	보도자료 게시판 제목 검색(q_searchVal=) 사용 기록	-
@@ -18,4 +18,5 @@
 용인 국가산단,삼성,FAB,근로자	국토교통부	(별첨) 용인 반도체 국가산단 특화 조성계획.hwp(같은 보도자료 첨부)	https://www.korea.kr/briefing/pressReleaseView.do?newsId=156667501	BIN0003	국가산단 개요도: 728만㎡·FAB 6기·근로자 9만명·이주택지·이동공공주택지구 (BIN000F 교통도는 261113-railplan/04 사용)	261114-chip-rail/03.jpg
 4차 국가철도망,분당선 연장,동탄~청주공항,신규사업	국토교통부	보도자료 210629 비수도권 광역철도 확대 등 중장기 철도 투자방향 제시(4차 철도망 확정, PDF 21쪽)	https://www.korea.kr/briefing/pressReleaseView.do?newsId=156459047	6·7	참고1 신규사업 현황 표: 6쪽 ③비수도권 광역철도(동탄~청주공항 등), 7쪽 ④수도권(분당선 연장 기흥~오산); 8·9쪽 계획도(전국·수도권)	261114-chip-rail/02.jpg, 04.jpg
 사이트:정책브리핑 검색	korea.kr	접속 메모	https://www.korea.kr/briefing/pressReleaseList.do?srchWord=검색어&period=direct&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&srchStartDate=..&srchEndDate=..	-	shell curl로 됨. 첨부는 /common/download.do?fileId=번호&tblKey=GMN. 기간을 좁혀야 결과가 걸림	-
-사이트:경기도·음성군·부산시	gg.go.kr, gnews.gg.go.kr, eumseong.go.kr, busan.go.kr	접속 메모	-	-	2026-11-14 모두 접속 실패(경기도 게시판은 잘못된 접근 차단) → 경기도 철도기본계획·중부내륙선 지선 자료는 다른 경로 필요	-
+사이트:경기도·음성군·부산시·충북	gg.go.kr, gnews.gg.go.kr, eumseong.go.kr, busan.go.kr, chungbuk.go.kr	접속 메모	-	-	2026-11-14 재시험: curl -sSL -A 'Mozilla/5.0' --retry 3 --retry-all-errors --retry-delay 3 -m 30 로 열림(끊김은 일시적). 경기도 '잘못된 접근'은 옛 게시판 번호(bsIdx=464) 탓 — 고시공고 bsIdx=469, 오늘의경기 bsIdx=838(목록은 화면 뒤 로딩이라 검색 결과 못 읽음). gnews 검색 조건 형식 미확인	-
+BuTX,부산형 급행철도,민자적격성,개통 시점,JTX	부산광역시	보도자료 251001 「차세대 부산형 급행철도(BuTX)」 민자 적격성 조사 통과(정정보도, PDF 9쪽)	https://www.busan.go.kr/nbtnewsBU/1700398	3	참고1 표: 54.043km·사업기간 6년(건설5+실증1)·4조7692억, 추진현황(23.11 KDI 의뢰→25.10 통과), 향후계획; 4쪽 노선도·7쪽 광역구간 표	261114-chip-rail/07.jpg
