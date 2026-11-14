@@ -11,6 +11,7 @@
   python3 tools/topic_scan.py              # 새 연관어 + 최근 글 제목 30개
   python3 tools/topic_scan.py --titles 150 # 최근 글 제목을 150개까지
   python3 tools/topic_scan.py --check "오산용인고속도로" "분양전환"   # 이미 쓴 주제인지 제목에서 찾기
+  python3 tools/topic_scan.py --kw "동탄 트램" "인덕원선"   # 원고용: 그 키워드의 네이버 자동완성 연관어만 출력
 기록 파일: data/ac_snapshot.json (실행할 때마다 갱신, 사진과 같은 push에 포함)
 """
 import argparse
@@ -83,7 +84,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--titles", type=int, default=30)
     ap.add_argument("--check", nargs="*")
+    ap.add_argument("--kw", nargs="*")
     a = ap.parse_args()
+
+    if a.kw:
+        for kw in a.kw:
+            items = autocomplete(kw)
+            print("[%s] %s" % (kw, ", ".join(items) if items else "연관어 없음(또는 읽기 실패)"))
+        return
 
     if a.check:
         titles = my_titles(300)
