@@ -8,12 +8,12 @@
 v2 원고 순서: 제목 → 서문 → '본문 3줄 요약'(1. 2. 3.) → 소제목('1. …') → 투자 유의사항 → 태그
  - 목차는 쓰지 않는다(옛 원고에 있으면 자동으로 버림). 옛 순서(요약이 서문 앞)도 그대로 읽는다.
  - 화면 순서는 항상 서문 → 3줄 요약 상자 → 소제목.
- - 본문 19px, 소제목 24px.
+ - 본문 16px(2026-11-15 19px→16px 되돌림), 소제목 24px.
  - 표: 원고에서 '|'로 시작하는 줄을 연달아 쓰면 표 1개가 된다(첫 줄이 머리줄, 연두 #e5f8cd).
        열 3개 이하·칸당 8자 이내(4열이면 5자) — 넘으면 '확인 필요' 알림. '| --- |' 구분줄은 버린다.
        | 구분 | 분양가 | 주변 시세 |
        | 84 타입 | 6억 | 8억 |
- - 썸네일 사진은 '사진: 00.jpg | 0-1'(서문 1번째 문단 뒤)로 넣는다.
+ - 썸네일은 서식 페이지에 넣지 않는다(네이버가 휴대폰에 없는 사진은 대표 이미지로 못 씀) — 00.jpg는 저장소에만 올리고 민국이 수작업으로 등록.
 
 실행:
     python3 tools/minsom_format.py 원고.txt 지시.txt -o index.html
@@ -293,7 +293,7 @@ def build(ms, spec):
          '<meta name="viewport" content="width=device-width,initial-scale=1">'
          '<title>%s</title></head>' % esc(page_title),
          '<body style="font-family:\'Nanum Gothic\',\'나눔고딕\',sans-serif;padding:22px;'
-         'font-size:19px;line-height:1.9;color:#111;margin:0;">',
+         'font-size:16px;line-height:1.9;color:#111;margin:0;">',
          '<button onclick="selectArticle()" style="font-size:18px;padding:10px 18px;'
          'margin-bottom:18px;">원고 전체 선택</button>',
          '<div id="article">']
