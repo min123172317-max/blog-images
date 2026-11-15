@@ -9,7 +9,8 @@ v2 원고 순서: 제목 → 서문 → '본문 3줄 요약'(1. 2. 3.) → 소�
  - 목차는 쓰지 않는다(옛 원고에 있으면 자동으로 버림). 옛 순서(요약이 서문 앞)도 그대로 읽는다.
  - 화면 순서는 항상 서문 → 3줄 요약 상자 → 소제목.
  - 본문 19px, 소제목 24px.
- - 표: 원고에서 '|'로 시작하는 줄을 연달아 쓰면 표 1개가 된다(첫 줄이 머리줄).
+ - 표: 원고에서 '|'로 시작하는 줄을 연달아 쓰면 표 1개가 된다(첫 줄이 머리줄, 연두 #e5f8cd).
+       열 3개 이하·칸당 8자 이내(4열이면 5자) — 넘으면 '확인 필요' 알림. '| --- |' 구분줄은 버린다.
        | 구분 | 분양가 | 주변 시세 |
        | 84 타입 | 6억 | 8억 |
  - 썸네일 사진은 '사진: 00.jpg | 0-1'(서문 1번째 문단 뒤)로 넣는다.
@@ -159,13 +160,19 @@ def parse_manuscript(text):
             "sections": sections, "notice": " ".join(notice), "tags": " ".join(tags)}
 
 
-def render_table(raw):
+def table_rows(raw):
     rows = [[c.strip() for c in r.strip().strip("|").split("|")] for r in raw.split("\n")]
+    # 마크다운 구분줄(| --- | --- |)은 버린다
+    return [r for r in rows if not all(re.fullmatch(r":?-{2,}:?", c) for c in r if c)]
+
+
+def render_table(raw):
+    rows = table_rows(raw)
     out = ['<table style="border-collapse:collapse;width:100%;font-size:15px;line-height:1.5;">']
     for k, cells in enumerate(rows):
         style = "border:1px solid #999;padding:6px 8px;text-align:center;"
         if k == 0:
-            style += "font-weight:700;background:#f2f2f2;"
+            style += "font-weight:700;background:#e5f8cd;"
         out.append("<tr>" + "".join('<td style="%s">%s</td>' % (style, esc(c)) for c in cells) + "</tr>")
     out.append("</table>")
     return "".join(out)
@@ -340,6 +347,18 @@ def main():
     ntab = sum(1 for x in paras_all if x.startswith(TABLE_MARK))
     if ntab > 1:
         warns.append("표 %d개 (글당 최대 1개)" % ntab)
+    for x in paras_all:
+        if not x.startswith(TABLE_MARK):
+            continue
+        rows = table_rows(x[len(TABLE_MARK):])
+        ncol = max(len(r) for r in rows)
+        limit = 8 if ncol <= 3 else 5
+        if ncol > 4:
+            warns.append("표 열 %d개 (최대 3개, 부득이하면 4개)" % ncol)
+        for r in rows:
+            for c in r:
+                if len(c) > limit:
+                    warns.append("표 칸 '%s' %d자 (열 %d개면 칸당 %d자 이내, 휴대폰 좌우 스와이프 방지)" % (c, len(c), ncol, limit))
     longp = sum(1 for x in paras_all if not x.startswith(TABLE_MARK) and len(SENT_SPLIT.split(x)) > 4)
     if longp:
         warns.append("문장이 5개 이상인 문단 %d개 (문단은 2~3문장)" % longp)

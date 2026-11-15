@@ -20,3 +20,5 @@
 사이트:정책브리핑 검색	korea.kr	접속 메모	https://www.korea.kr/briefing/pressReleaseList.do?srchWord=검색어&period=direct&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&srchStartDate=..&srchEndDate=..	-	shell curl로 됨. 첨부는 /common/download.do?fileId=번호&tblKey=GMN. 기간을 좁혀야 결과가 걸림	-
 사이트:경기도·음성군·부산시·충북	gg.go.kr, gnews.gg.go.kr, eumseong.go.kr, busan.go.kr, chungbuk.go.kr	접속 메모	-	-	2026-11-14 재시험: curl -sSL -A 'Mozilla/5.0' --retry 3 --retry-all-errors --retry-delay 3 -m 30 로 열림(끊김은 일시적). 경기도 '잘못된 접근'은 옛 게시판 번호(bsIdx=464) 탓 — 고시공고 bsIdx=469, 오늘의경기 bsIdx=838(목록은 화면 뒤 로딩이라 검색 결과 못 읽음). gnews 검색 조건 형식 미확인	-
 BuTX,부산형 급행철도,민자적격성,개통 시점,JTX	부산광역시	보도자료 251001 「차세대 부산형 급행철도(BuTX)」 민자 적격성 조사 통과(정정보도, PDF 9쪽)	https://www.busan.go.kr/nbtnewsBU/1700398	3	참고1 표: 54.043km·사업기간 6년(건설5+실증1)·4조7692억, 추진현황(23.11 KDI 의뢰→25.10 통과), 향후계획; 4쪽 노선도·7쪽 광역구간 표	261114-chip-rail/07.jpg
+인덕원,월곶판교선,인덕원동탄선,인덕원역	국토교통부	고시 제2021-1192호 월곶~판교 복선전철 실시계획(인덕원 정거장 인덕원동탄선 통합 환승 설계)	미기록	-	인덕원 정거장 통합 환승 구조(기사 인용으로 확인, 원문 미열람)	-
+월곶판교선,인덕원	국토교통부	고시 제2026-350호 월곶~판교 복선전철(통합 1차) 실시계획(변경) 승인(2026.7.7)	https://www.eum.go.kr/web/gs/gv/gvGosiDet.jsp?seq=638094	-	실시계획 변경 고시(첨부 도면 미열람)	-
