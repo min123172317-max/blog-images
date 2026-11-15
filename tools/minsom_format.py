@@ -3,7 +3,16 @@
 """민솜 서식 변환 스크립트
 
 원고(순수 텍스트) + 지시 파일(형광펜·사진 위치)을 받아
-기존 '민솜 모바일 자동서식' 틀 그대로 한 줄짜리 HTML을 만든다.
+민솜 모바일 자동서식 틀(v2, 2026-11-15)로 한 줄짜리 HTML을 만든다.
+
+v2 원고 순서: 제목 → 서문 → '본문 3줄 요약'(1. 2. 3.) → 소제목('1. …') → 투자 유의사항 → 태그
+ - 목차는 쓰지 않는다(옛 원고에 있으면 자동으로 버림). 옛 순서(요약이 서문 앞)도 그대로 읽는다.
+ - 화면 순서는 항상 서문 → 3줄 요약 상자 → 소제목.
+ - 본문 19px, 소제목 24px.
+ - 표: 원고에서 '|'로 시작하는 줄을 연달아 쓰면 표 1개가 된다(첫 줄이 머리줄).
+       | 구분 | 분양가 | 주변 시세 |
+       | 84 타입 | 6억 | 8억 |
+ - 썸네일 사진은 '사진: 00.jpg | 0-1'(서문 1번째 문단 뒤)로 넣는다.
 
 실행:
     python3 tools/minsom_format.py 원고.txt 지시.txt -o index.html
@@ -41,13 +50,14 @@ ENTITY_WORDS = ["AMAT"]
 
 BL = '<p style="margin:0;"><br></p>'
 HR = '<hr style="border:0;border-top:1px solid #aaa;margin:30px 0;">'
-CENTER_TITLE = '<p style="text-align:center;font-size:18px;font-weight:700;margin:0;">%s</p>'
+CENTER_TITLE = '<p style="text-align:center;font-size:19px;font-weight:700;margin:0;">%s</p>'
 SCRIPT = ('<script>function selectArticle(){var el=document.getElementById("article");'
           'var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();'
           's.removeAllRanges();s.addRange(r);}</script>')
 
 SENT_SPLIT = re.compile(r'(?<=[가-힣\)\]"”’\'][.?!])\s+')
 NUM_LINE = re.compile(r'^(\d+)\.\s+(.+)$')
+TABLE_MARK = "\x00TABLE\x00"
 
 
 def die(msg):
@@ -76,11 +86,12 @@ def parse_manuscript(text):
     lines = [l for l in lines if l and not re.fullmatch(r'[-=*_]{3,}', l)]
 
     try:
-        i = next(k for k, l in enumerate(lines) if l.startswith("본문 3줄 요약"))
+        si = next(k for k, l in enumerate(lines) if l.startswith("본문 3줄 요약"))
     except StopIteration:
         die("'본문 3줄 요약' 줄을 찾지 못했습니다.")
-    title = lines[0] if i > 0 else ""
-    i += 1
+    title = lines[0] if si > 0 else ""
+    intro = list(lines[1:si])            # v2: 제목과 요약 사이가 서문
+    i = si + 1
 
     summary = []
     while i < len(lines) and len(summary) < 3:
@@ -92,21 +103,19 @@ def parse_manuscript(text):
     if len(summary) != 3:
         die("본문 3줄 요약이 3줄이 아닙니다.")
 
-    if i >= len(lines) or not lines[i].replace(" ", "").startswith("목차"):
-        die("3줄 요약 다음에 '목차' 줄이 없습니다.")
-    i += 1
-    toc = []
-    while i < len(lines):
-        m = NUM_LINE.match(lines[i])
-        if not m or int(m.group(1)) != len(toc) + 1:
-            break
-        toc.append(lines[i])
-        i += 1
-    if not toc:
-        die("목차 항목을 찾지 못했습니다.")
-    toc_set = {norm(t) for t in toc}
+    toc_set = set()
+    if i < len(lines) and lines[i].replace(" ", "").startswith("목차"):
+        i += 1                            # 옛 원고의 목차는 읽고 버린다
+        n = 0
+        while i < len(lines):
+            m = NUM_LINE.match(lines[i])
+            if not m or int(m.group(1)) != n + 1:
+                break
+            toc_set.add(norm(lines[i]))
+            n += 1
+            i += 1
 
-    intro, sections, notice, tags = [], [], [], []
+    sections, notice, tags = [], [], []
     cur = intro
     mode = "body"
     while i < len(lines):
@@ -117,7 +126,7 @@ def parse_manuscript(text):
             continue
         if l.replace(" ", "") in ("네이버태그", "태그"):
             continue
-        if mode == "notice" and re.match(r'^(공식 원문 대조|정정 사항|수정할 부분)', l):
+        if mode == "notice" and re.match(r'^(공식 원문 대조|정정 사항|수정할 부분|연관 키워드)', l):
             break                                   # 원고 뒤에 붙은 납품 메모는 버림
         if l.startswith("투자 유의사항"):
             mode = "notice"
@@ -128,6 +137,12 @@ def parse_manuscript(text):
         if mode == "notice":
             notice.append(l)
             continue
+        if l.startswith("|"):                       # 표 줄
+            if cur and cur[-1].startswith(TABLE_MARK):
+                cur[-1] += "\n" + l
+            else:
+                cur.append(TABLE_MARK + l)
+            continue
         m = NUM_LINE.match(l)
         if m and (norm(l) in toc_set or
                   (int(m.group(1)) == len(sections) + 1 and len(l) < 70 and not l.endswith("."))):
@@ -136,12 +151,24 @@ def parse_manuscript(text):
             continue
         cur.append(l)
 
-    if len(sections) != len(toc):
-        die("목차는 %d개인데 본문 소제목은 %d개입니다." % (len(toc), len(sections)))
+    if not sections:
+        die("소제목('1. …')을 찾지 못했습니다.")
     if not notice:
         die("'투자 유의사항'을 찾지 못했습니다.")
-    return {"title": title, "summary": summary, "toc": toc, "intro": intro,
+    return {"title": title, "summary": summary, "intro": intro,
             "sections": sections, "notice": " ".join(notice), "tags": " ".join(tags)}
+
+
+def render_table(raw):
+    rows = [[c.strip() for c in r.strip().strip("|").split("|")] for r in raw.split("\n")]
+    out = ['<table style="border-collapse:collapse;width:100%;font-size:15px;line-height:1.5;">']
+    for k, cells in enumerate(rows):
+        style = "border:1px solid #999;padding:6px 8px;text-align:center;"
+        if k == 0:
+            style += "font-weight:700;background:#f2f2f2;"
+        out.append("<tr>" + "".join('<td style="%s">%s</td>' % (style, esc(c)) for c in cells) + "</tr>")
+    out.append("</table>")
+    return "".join(out)
 
 
 def parse_spec(text):
@@ -179,7 +206,7 @@ def build(ms, spec):
 
     def find_para(snip):
         hits = [(b, p) for b, paras in enumerate(blocks)
-                for p, t in enumerate(paras) if snip in t]
+                for p, t in enumerate(paras) if not t.startswith(TABLE_MARK) and snip in t]
         if not hits:
             die("원고에서 찾을 수 없는 글자 조각: " + snip)
         if len(hits) > 1:
@@ -213,6 +240,9 @@ def build(ms, spec):
     def render_block(b):
         out = []
         for p, text in enumerate(blocks[b]):
+            if text.startswith(TABLE_MARK):
+                out.append(render_table(text[len(TABLE_MARK):]))
+                continue
             sents = SENT_SPLIT.split(text)
             colored = dict(marks.get((b, p), []))
             parts = [('<mark style="background:%s;font-weight:700;">%s</mark>' % (colored[k], esc(s)))
@@ -256,19 +286,19 @@ def build(ms, spec):
          '<meta name="viewport" content="width=device-width,initial-scale=1">'
          '<title>%s</title></head>' % esc(page_title),
          '<body style="font-family:\'Nanum Gothic\',\'나눔고딕\',sans-serif;padding:22px;'
-         'font-size:16px;line-height:1.9;color:#111;margin:0;">',
+         'font-size:19px;line-height:1.9;color:#111;margin:0;">',
          '<button onclick="selectArticle()" style="font-size:18px;padding:10px 18px;'
          'margin-bottom:18px;">원고 전체 선택</button>',
-         '<div id="article">',
-         CENTER_TITLE % "본문 3줄 요약", BL,
-         '<div style="background:#e5f8cd;border:3px solid #000;padding:18px 20px;">'
-         '<ol style="margin:0;padding-left:22px;">']
+         '<div id="article">']
+    if ms["intro"]:
+        h += [render_block(0), HR]
+    h += [CENTER_TITLE % "본문 3줄 요약", BL,
+          '<div style="background:#e5f8cd;border:3px solid #000;padding:18px 20px;">'
+          '<ol style="margin:0;padding-left:22px;">']
     h += ['<li style="font-weight:700;text-align:justify;">%s</li>' % esc(s) for s in ms["summary"]]
-    h += ['</ol></div>', BL, CENTER_TITLE % "목차", BL]
-    h += ['<p style="font-size:11px;line-height:1.7;margin:0;">%s</p>' % esc(t) for t in ms["toc"]]
-    h += [HR, render_block(0)]
+    h += ['</ol></div>']
     for k, sec in enumerate(ms["sections"], 1):
-        h += [HR, '<p style="font-size:19px;font-weight:700;margin:0;">%s</p>' % esc(sec["title"]),
+        h += [HR, '<p style="font-size:24px;font-weight:700;margin:0;">%s</p>' % esc(sec["title"]),
               BL, render_block(k)]
     h += [HR, '<p style="font-size:11px;font-weight:700;margin:0;">투자 유의사항</p>',
           '<p style="font-size:11px;margin:0;">%s</p>' % esc(ms["notice"])]
@@ -295,8 +325,24 @@ def main():
     with open(a.out, "w", encoding="utf-8") as f:
         f.write(page)
 
-    body = "\n".join([ms["title"]] + ms["summary"] + ms["toc"] + ms["intro"] +
-                     [x for s in ms["sections"] for x in [s["title"]] + s["paras"]] + [ms["notice"]])
+    paras_all = [x for x in ms["intro"] + [y for s in ms["sections"] for y in s["paras"]]]
+    body = "\n".join([ms["title"]] + ms["summary"] + [s["title"] for s in ms["sections"]] +
+                     [x.replace(TABLE_MARK, "") for x in paras_all] + [ms["notice"]])
+    # ---- v2 원고 규칙 점검(알림만) ----
+    if len(ms["title"]) > 40:
+        warns.append("제목 %d자 (40자 이내여야 함)" % len(ms["title"]))
+    if len(re.findall(r"\d[\d,.]*", ms["title"])) > 2 or "→" in ms["title"]:
+        warns.append("제목에 숫자가 많거나 '→'가 있음 (숫자는 1개, 나열 금지)")
+    if len(ms["sections"]) > 5:
+        warns.append("소제목 %d개 (적중형 4~5개, 검색형 3~4개)" % len(ms["sections"]))
+    if len(body) > 4200:
+        warns.append("분량 약 %d자 (적중형 3,500~4,000자, 검색형 1,500~2,000자)" % len(body))
+    ntab = sum(1 for x in paras_all if x.startswith(TABLE_MARK))
+    if ntab > 1:
+        warns.append("표 %d개 (글당 최대 1개)" % ntab)
+    longp = sum(1 for x in paras_all if not x.startswith(TABLE_MARK) and len(SENT_SPLIT.split(x)) > 4)
+    if longp:
+        warns.append("문장이 5개 이상인 문단 %d개 (문단은 2~3문장)" % longp)
     print("완료: %s (%d자)" % (a.out, len(page)))
     print("소제목 %d개 / 형광펜 %d개 / 사진 %d장 / 원고 분량 약 %d자(태그 제외)"
           % (len(ms["sections"]), len(spec["marks"]), len(spec["photos"]), len(body)))
