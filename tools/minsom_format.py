@@ -204,7 +204,13 @@ def parse_spec(text):
     return spec
 
 
+READ_MORE = "함께 읽으면 좋은 글입니다."
+
+
 def build(ms, spec):
+    # '함께 읽으면 좋은 글입니다.' 줄은 원고에 있든 없든 본문 맨 끝에 한 번만, 굵게+밑줄로 넣는다(2026-11-15)
+    for sec in ms["sections"]:
+        sec["paras"] = [t for t in sec["paras"] if t.replace(" ", "") != READ_MORE.replace(" ", "")]
     # blocks[k] = 서문(k=0) 또는 소제목 k의 문단 목록
     blocks = [ms["intro"]] + [s["paras"] for s in ms["sections"]]
     marks = {}    # (블록, 문단) -> [(문장번호, 색)]
@@ -307,6 +313,7 @@ def build(ms, spec):
     for k, sec in enumerate(ms["sections"], 1):
         h += [HR, '<p style="font-size:24px;font-weight:700;margin:0;">%s</p>' % esc(sec["title"]),
               BL, render_block(k)]
+    h += [BL, '<p style="margin:0;"><b><u>%s</u></b></p>' % esc(READ_MORE)]
     h += [HR, '<p style="font-size:11px;font-weight:700;margin:0;">투자 유의사항</p>',
           '<p style="font-size:11px;margin:0;">%s</p>' % esc(ms["notice"])]
     if ms["tags"]:
@@ -342,8 +349,8 @@ def main():
         warns.append("제목에 숫자가 많거나 '→'가 있음 (숫자는 1개, 나열 금지)")
     if len(ms["sections"]) > 5:
         warns.append("소제목 %d개 (적중형 4~5개, 검색형 3~4개)" % len(ms["sections"]))
-    if len(body) > 4200:
-        warns.append("분량 약 %d자 (적중형 3,500~4,000자, 검색형 1,500~2,000자)" % len(body))
+    if len(body) > 5000 or len(body) < 3000:
+        warns.append("분량 약 %d자 (기본 3,000~3,500자, 최대 4,500~5,000자, 3,000자 미만 금지)" % len(body))
     ntab = sum(1 for x in paras_all if x.startswith(TABLE_MARK))
     if ntab > 1:
         warns.append("표 %d개 (글당 최대 1개)" % ntab)
