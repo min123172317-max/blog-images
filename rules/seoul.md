@@ -77,6 +77,11 @@
   · ★1단계는 정비사업 정보몽땅 구역 페이지(2026-11-17 노량진1구역 글: 검색 0회로 3장 확보). 웹검색 1회로 cafeId(구역 조합 페이지 주소의 cafeId=…)를 찾은 뒤 아래 4개를 바로 받습니다. 위치도 `https://cleanup.seoul.go.kr/cafe/mastr-cleanup-bsnsSumry/execute.do?cafeId=ID&stepSeCode=103&div=locImage`, 배치도 `div=posImage`, 조감도 `div=sceImage`(썸네일 후보), 단위세대 평면도 `https://cleanup.seoul.go.kr/service/opendata/cafeOthbc/vscrCafe.do?cafeId=ID&othbcIemSn=205`(84 타입 img는 '84A' 표 바로 뒤). 페이지 HTML에서 `/servlet/image…` 주소를 grep해 받습니다. 정보몽땅 그림은 사업시행인가 당시 계획일 수 있으므로 최신 세대수·층수는 서울시 보도자료 첨부 도면을 우선합니다(옛 배치도는 '계획 변경 전후'·'공사비 기준 계획' 증명에 씀).
   · 그다음 서울시 보도자료 첨부(seoulboard getFile)·서울시보 순서로 엽니다. 분양가 소제목은 ⑨(청약홈 → KB부동산), 실패하면 정보몽땅 84 평면도로 채웁니다.
   · 시도하지 않는 곳: opengov.seoul.go.kr(정보소통광장 결재문서, 연결 끊김 2회).
+  · ★보도자료 제목에는 단지명이 없을 때가 많습니다(예: 「제13차 신속통합기획 수권분과위원회 개최결과」, 2026-11-17 풍납극동 글). 단지명 제목 검색이 비면 웹검색하지 말고 회의 종류로 목록을 찾습니다: `www.seoul.go.kr/news/news_report.do?bbsNo=158&srchKey=sj&srchText=수권분과`(또는 통합심의·도시계획위원회) → 회의일 다음 1~3일 등록 글. 한 첨부에 여러 안건 보도자료가 들어 있으므로 본문에서 단지명을 확인합니다.
+  · hwpx 첨부는 zip입니다: `unzip -q 파일 -d 폴더` 뒤 BinData/의 원본 그림을 쓰고, Contents/section0.xml에서 각 그림 앞 글자(□ 위치도·배치도·조감도)로 어느 단지 그림인지 확인합니다(PDF 캡처보다 해상도 높음, 검색 0회). hwp(옛 형식)는 tools/hwp_images.py.
+  · 자치구 '재건축단지·재개발구역' 현황 페이지(예: 송파구 www.songpa.go.kr/www/contents.do?key=6165)에 추진내역 날짜와 '정비사업 추진단계' 그림이 있어 1번 소제목(지금 어느 단계) 자료로 씁니다. 건축계획 줄은 옛 안일 수 있으니(풍납극동: 45층 570세대로 남아 있었음) 날짜·단계만 근거로 쓰고, 캡처는 추진내역 마지막 줄~추진단계 그림만 자릅니다.
+  · 정비구역 지정 고시가 나면 서울시보 고시문 PDF(urban.seoul.go.kr/UpisArchive/DATA/PM/pdf/…, 서울도시공간포털)를 1번 소제목 1순위로 엽니다(정비구역 결정도·토지이용계획도). 웹검색 allowed_domains에 urban.seoul.go.kr을 넣으면 바로 나옵니다.
+  · 구청 고시공고 첨부(eminwon)는 4-6에서 시도 금지지만, 서울 정비사업 글에 한해 정비계획 공람안(평형 구성·대지지분·추정 비례율, 재개발은 권리산정기준일·토지등소유자 수·구역계도)을 찾을 때만 1회 시도합니다(2026-11-17 민국 허용). UA·Referer 꾸미기 없이 1회 실패하면 바로 넘어갑니다.
   · 예산 목표: 웹검색 5회 이내(정보몽땅·보도자료 첨부를 먼저 쓰면 충분함).
   · 서울 자료원(2026-11-17 서부선 글에서 확인, 검색 0회로 먼저 엶): ① 서울시 교통 뉴스 news.seoul.go.kr/traffic/?s=노선명 (보도 본문 그림·첨부 pdf, 도시철도망 구축계획 본보고서 archives/519066: 노선별 노선도·사업비·재원조달 표) ② 서울시 보도자료 www.seoul.go.kr/news/news_report.do?nttNo=… 첨부 hwp(seoulboard.seoul.go.kr/comm/getFile, 큰 파일은 백그라운드로 받음; 그림은 tools/hwp_images.py, 1쪽 줄글은 hwp 안 PrvImage) ③ 정비사업 정보몽땅 cleanup.seoul.go.kr 구역 사업개요의 위치도(div=locImage)·배치도(posImage)·조감도(sceImage) ④ 연계 광역철도는 korea.kr 국토부 보도자료 pdf '참고' 노선도.
   · 시도하지 않는 곳: opengov.seoul.go.kr(정보소통광장), ep.go.kr(은평구) — 연결 끊김(data/blocked_sites.md).
