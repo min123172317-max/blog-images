@@ -11,7 +11,7 @@
 - 블로그 글에는 글쓴이의 개인 정보(직업 배경, 사는 곳, 직접 본 현장, 집 매수 시점 등)를 쓰지 않습니다. 철도·부동산 통찰은 일반 설계·운영 관점으로만 씁니다.
 - 말투는 한국어 존댓말, 자연스럽고 결단력 있게. 불필요한 면책 문구는 쓰지 않습니다.
 - 2026-11-16 이후에는 낮은 모델·무료 버전이 쓸 예정입니다. 그래서 규칙을 글자 그대로 지키고, 사용량 예산(웹검색 횟수 등)을 지킵니다.
-- 도구는 blog-images 저장소(min123172317-max/blog-images)에 있습니다: tools/topic_scan.py, tools/minsom_format.py, addressbook.tsv.
+- 도구는 blog-images 저장소(min123172317-max/blog-images)에 있습니다: tools/topic_scan.py, tools/topic_memory.py(터진 주제 기억), tools/blog_stats.py·views_compare.py(통계), tools/minsom_format.py, addressbook.tsv, data/topic_keywords.tsv(메인 키워드).
 
 ## 1. 블로그 개요
 - 민솜(네이버 블로그 '민소아세상', https://m.blog.naver.com/minsoaa): 경기 남부(동탄·화성, 수원, 용인, 성남, 평택) 부동산·철도·도로·반도체·재건축 분석.
@@ -31,6 +31,7 @@
 | 이미지 찾아줘 | rules/image.md + rules/format.md (서식 생성에 형광펜·표·틀 규칙이 쓰임) |
 | 자동서식 적용해줘 | rules/format.md |
 | 서울 글감·글·이미지 | rules/seoul.md + 해당 명령의 민솜 규칙 파일 |
+| 통계 캡처를 올림 / 조회수 분석해줘 | rules/stats.md |
 | 규칙을 바꾸기 전 근거 확인 | rules/data.md |
 | 규칙 최적화 (매주 월요일 예약 '민솜 규칙 주간 최적화') | rules/weekly.md |
 
