@@ -19,6 +19,9 @@
 | eminwon.gunpo.go.kr (군포시 고시공고 첨부) | 연결 끊김. 대신 www.gunpo.go.kr 정비사업 공지사항(bbsNo=1003416) 첨부는 받아짐 | 2026-11-17 | 2026 선도지구 외 지정계획 공고 hwp |
 | opengov.seoul.go.kr (서울 정보소통광장) | 연결 끊김(Connection reset) | 2026-11-17 | 서부선 2021 예산서·실시협약 민투심 보도자료(press/32463683) |
 | ep.go.kr (은평구) | 연결 끊김(Connection reset) | 2026-11-17 | 새절역 주변 수색·증산 정비구역 자료(시도만) |
+| applyhome.co.kr (청약홈) | 프록시 403(CONNECT tunnel failed) | 2026-11-17 | 노량진8구역 아크로 리버스카이 입주자모집공고 공급금액표 |
+| files-scs.pstatic.net (네이버 부동산 공고문 사본) | 프록시 403 | 2026-11-17 | 아크로 리버스카이 입주자모집공고문 PDF |
+| opengov.seoul.go.kr (서울 정보소통광장) | 연결 끊김(Connection reset) 2회 | 2026-11-17 | 노량진1구역 재정비촉진계획 변경(안) 협의 회신(sanction/35447075) |
 
 ## 참고: 불안정하지만 열리는 곳
 - yongin.go.kr(용인시): 자주 끊기지만 2~4회 재시도하면 열림. 휴대폰 UA로 받음. 첨부 경로 /component/file/ND_fileDownload.do
