@@ -14,3 +14,19 @@ blog-images
 ## tools/topic_scan.py (글감 스캔)
 
 블로그에 올린 글 제목과 네이버 자동완성의 새 연관어를 읽어 글감 중복과 수요를 확인한다. 사용법은 파일 맨 위 설명 참고.
+
+## tools/hwp_images.py (한글 파일 그림 꺼내기)
+
+    python3 -I tools/hwp_images.py 문서.hwp 출력폴더
+
+HWP는 olefile을 쓰며 없으면 자동 설치한다. HWPX도 된다.
+
+## tools/cap.py (캡처 마무리)
+
+    python3 -I tools/cap.py 입력이미지 출력.jpg [x0 y0 x1 y1] [여백px]
+
+영역 자르기 → 흰 여백 깎기 → 상하좌우 같은 여백 → 1080폭 JPEG(300KB 이하). 작은 원본은 키우지 않는다.
+
+## data/blocked_sites.md (막힌 사이트 기록)
+
+접속이 막힌 공식 사이트와 그때 필요했던 자료 목록. 민국이 모아서 한꺼번에 해결할 용도.
