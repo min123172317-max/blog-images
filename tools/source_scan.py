@@ -4,6 +4,7 @@
 실행:  python3 tools/source_scan.py            # 최근 4일(오늘 포함), 기본 몫으로 출력
        python3 tools/source_scan.py --days 3   # 기간 변경
        python3 tools/source_scan.py --all      # 몫 제한 없이 출처별 상위 15개
+       python3 tools/source_scan.py --seoul    # 서울 블로그용(data/sources_seoul.tsv, 서울 지명·서울 몫, rules/seoul.md 6-10)
 필요 허용 주소: naver.me, apis.naver.com, m.blog.naver.com, www.youtube.com, www.hankyung.com, www.kyeonggi.com, www.korea.kr
 출처 목록은 data/sources.tsv (type, name, id, menus) 에서 읽습니다.
 """
@@ -33,9 +34,18 @@ def get(url, referer=None, timeout=15):
         return r.read().decode("utf-8", "ignore")
 
 
-def load_sources():
+# ── 서울 모드(--seoul) 낱말: main()에서 위 전역값을 바꿔 끼운다 ──
+SEOUL_TOP = re.compile(r"강남|서초|송파|강동|용산|성동|광진|동대문|중랑|성북|강북|도봉|노원|은평|서대문|마포|양천|강서|구로|금천|영등포|동작|관악|종로"
+                       r"|압구정|반포|잠실|목동|여의도|한남|성수|흑석|노량진|신림|상계|중계|대치|개포|이촌|신당|아현|장위|이문|휘경|미아|길음|창동|수색|증산|불광|봉천|신길|마곡|왕십리|청량리|자양|화곡|방화|상도|공덕|문래|당산")
+SEOUL_OK = re.compile(r"서울|강북|강남권|한강")
+JB = re.compile(r"재건축|재개발|정비|신통|신속통합|모아타운|모아주택|가로주택|조합|관리처분|사업시행|통합심의|시공사|이주|철거|분담금|비례율|구역")
+RULE = re.compile(r"토허|토지거래|허가구역|투기과열|규제|지위 ?양도|대출|거래량|실거래|신고가|재초환|전매")
+SEOUL_EXCLUDE = re.compile(r"청약|당첨|미달|줍줍|모집공고|모델하우스|가입인사|등업|광고|홍보|직거래|매물|대통령|정치|국힘|민주당|체포|성범죄|살인|사망|폭행|경찰|장관동정|비대위|조합장 ?해임")
+
+
+def load_sources(fname="data/sources.tsv"):
     rows = []
-    for line in (ROOT / "data/sources.tsv").read_text(encoding="utf-8").splitlines()[1:]:
+    for line in (ROOT / fname).read_text(encoding="utf-8").splitlines()[1:]:
         if line.strip() and not line.startswith("#"):
             t, name, sid, menus = (line.split("\t") + ["", "", "", ""])[:4]
             rows.append({"type": t, "name": name, "id": sid, "menus": [m for m in menus.split(",") if m]})
@@ -184,11 +194,15 @@ def score(items):
             seen.setdefault(w, set()).add(x["src"])
     for x in items:
         t = x["title"]
-        reg = 25 if REGION_TOP.search(t) else 15 if REGION_OK.search(t) else 0
-        ov = 25 if any(len(seen[w]) >= 2 for w in set(tok.findall(t)) if w not in ("반도체",)) else 0
+        tr = t + " " + x.get("menu", "") if SEOUL_MODE else t   # 서울: 구 게시판 이름도 지역으로 침
+        reg = 25 if REGION_TOP.search(tr) else 15 if REGION_OK.search(t) else 0
+        ov = 25 if any(len(seen[w]) >= 2 for w in set(tok.findall(t)) if w not in ("반도체", "서울", "한강")) else 0
         cr = 0 if "ratio" in x else min(10, x["comments"] / max(1, x["views"]) * 500)
         x["score"] = 0 if EXCLUDE.search(t) else round(min(40, x["rel"] * 10) + reg + ov + cr)
-        x["kind"] = "철도" if RAIL.search(t) else "새소식" if NEWS.search(t) else "지역"
+        if SEOUL_MODE:   # 서울: 정비 / 교통 / 규제거래 / 동네(그 밖)
+            x["kind"] = "정비" if JB.search(t) else "철도" if RAIL.search(t) else "규제거래" if RULE.search(t) else "지역"
+        else:
+            x["kind"] = "철도" if RAIL.search(t) else "새소식" if NEWS.search(t) else "지역"
     return items
 
 
@@ -204,17 +218,35 @@ QUOTA = [("동탄 카페", lambda x: x["group"] == "dongtan", 3),
          ("블로그", lambda x: x["group"] == "blog", 5)]  # 블로그마다 최대 1개(blog_items에서 보장)
 
 
+# 서울 하루 몫 (rules/seoul.md 6-10 — 바꾸면 여기만 고칩니다). 카페는 부동산스터디만.
+QUOTA_SEOUL = [("부동산스터디·정비사업", lambda x: x["group"] == "study" and x["kind"] == "정비", 5),
+               ("부동산스터디·서울교통", lambda x: x["group"] == "study" and x["kind"] == "철도", 3),
+               ("부동산스터디·동네(구 게시판)", lambda x: x["group"] == "study" and x["kind"] == "지역", 3),
+               ("부동산스터디·규제거래", lambda x: x["group"] == "study" and x["kind"] == "규제거래", 2),
+               ("유튜브(5만+)", lambda x: x["group"] == "youtube", 3),
+               ("한국경제 랭킹", lambda x: x["group"] == "news", 2),
+               ("국토부 보도자료(정책브리핑)", lambda x: x["group"] == "molit", 1),
+               ("서울 메이트 블로그", lambda x: x["group"] == "blog", 5)]
+SEOUL_MODE = False
+
+
 def main():
+    global REGION_TOP, REGION_OK, HK_KEEP, EXCLUDE, QUOTA, SEOUL_MODE
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=3, help="오늘로부터 며칠 전 0시까지 (기본 3 → 4일치)")
     ap.add_argument("--min-views", type=int, default=50000, help="유튜브 최소 조회수")
     ap.add_argument("--all", action="store_true", help="몫 제한 없이 출처별 상위 15개")
+    ap.add_argument("--seoul", action="store_true", help="서울 블로그용 출처·지명·몫")
     a = ap.parse_args()
+    if a.seoul:
+        SEOUL_MODE = True
+        REGION_TOP, REGION_OK, EXCLUDE, QUOTA = SEOUL_TOP, SEOUL_OK, SEOUL_EXCLUDE, QUOTA_SEOUL
+        HK_KEEP = re.compile(r"아파트|집값|재건축|재개발|분담금|부동산|토허|GTX|철도|노선|지하철|경전철|지하화|" + JB.pattern + "|" + SEOUL_TOP.pattern + "|" + SEOUL_OK.pattern)
     today = dt.datetime.now(KST).replace(hour=0, minute=0, second=0, microsecond=0)
     cutoff_ms = (today - dt.timedelta(days=a.days)).timestamp() * 1000
 
     items, fails = [], []
-    for s in load_sources():
+    for s in load_sources("data/sources_seoul.tsv" if a.seoul else "data/sources.tsv"):
         try:
             if s["type"] == "cafe":
                 got = cafe_items(s, cutoff_ms)
@@ -238,7 +270,7 @@ def main():
             fails.append(f"{s['name']}: {type(e).__name__} {str(e)[:80]}")
 
     score(items)
-    print(f"# 외부 글감 수집 {dt.datetime.now(KST):%Y-%m-%d %H:%M} (기준: {today - dt.timedelta(days=a.days):%m-%d} 0시 이후, {len(items)}건)")
+    print(f"# {'서울 ' if a.seoul else ''}외부 글감 수집 {dt.datetime.now(KST):%Y-%m-%d %H:%M} (기준: {today - dt.timedelta(days=a.days):%m-%d} 0시 이후, {len(items)}건)")
     picked = set()
     for label, cond, n in QUOTA:
         L = sorted([x for x in items if cond(x) and x["score"] > 0], key=lambda x: -x["score"])[: 15 if a.all else n]

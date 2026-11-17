@@ -12,6 +12,7 @@
   python3 tools/topic_scan.py --titles 150 # 최근 글 제목을 150개까지
   python3 tools/topic_scan.py --check "오산용인고속도로" "분양전환"   # 이미 쓴 주제인지 제목에서 찾기
   python3 tools/topic_scan.py --kw "동탄 트램" "인덕원선"   # 원고용: 그 키워드의 네이버 자동완성 연관어만 출력
+  python3 tools/topic_scan.py --seoul [--check …]          # 서울 블로그: 서울 씨앗 키워드·서울 블로그 제목·data/ac_snapshot_seoul.json
 기록 파일: data/ac_snapshot.json (실행할 때마다 갱신, 사진과 같은 push에 포함)
 """
 import argparse
@@ -44,6 +45,22 @@ SEEDS = [
 ]
 
 
+# 서울 블로그 (rules/seoul.md 6-10). 아이디는 민국이 알려 주면 여기 한 곳만 채웁니다.
+SEOUL_BLOG_ID = ""  # 블로그 이름: 서울 새집 언제 오나 (주소 아이디 받으면 채움)
+SEOUL_SEEDS = [
+    # 정비사업 (재건축·재개발 묶음 키워드)
+    "서울 재개발", "서울 재건축", "신속통합기획", "모아타운", "정비구역 지정", "관리처분인가", "사업시행인가", "재건축 분담금",
+    "목동 재건축", "상계주공 재건축", "여의도 재건축", "압구정 재건축", "잠실 재건축", "개포 재건축",
+    "노량진 재개발", "흑석 재개발", "한남 재개발", "성수 전략정비구역", "북아현 재개발", "장위 재개발", "신림 재개발", "상도 재개발",
+    "이문 휘경 재개발", "청량리 재개발", "마천 재개발", "미아 재개발", "봉천 재개발", "수색 증산 재개발",
+    # 서울 교통
+    "서울 경전철", "서부선", "강북횡단선", "면목선", "목동선", "위례신사선", "신림선 연장", "동북선",
+    "GTX-B", "GTX-C 서울", "철도 지하화", "경부선 지하화", "동부간선 지하화", "서울 도시철도망",
+    # 규제·거래
+    "토지거래허가구역 서울", "조합원 지위 양도", "재초환", "서울 아파트 거래량",
+]
+
+
 def get(url, referer=None):
     req = urllib.request.Request(url, headers={"User-Agent": UA, **({"Referer": referer} if referer else {})})
     with urllib.request.urlopen(req, timeout=20) as r:
@@ -52,6 +69,8 @@ def get(url, referer=None):
 
 def my_titles(limit):
     out = []
+    if not BLOG_ID:
+        return out
     page = 1
     while len(out) < limit and page <= 10:
         url = ("https://blog.naver.com/PostTitleListAsync.naver?blogId=%s&viewdate=&currentPage=%d"
@@ -85,7 +104,14 @@ def main():
     ap.add_argument("--titles", type=int, default=30)
     ap.add_argument("--check", nargs="*")
     ap.add_argument("--kw", nargs="*")
+    ap.add_argument("--seoul", action="store_true", help="서울 블로그 모드")
     a = ap.parse_args()
+    global BLOG_ID, SEEDS, SNAP
+    if a.seoul:
+        SEEDS, SNAP = SEOUL_SEEDS, os.path.join(HERE, "..", "data", "ac_snapshot_seoul.json")
+        BLOG_ID = SEOUL_BLOG_ID
+        if not BLOG_ID and not a.kw:
+            print("※ 서울 블로그 아이디가 아직 없습니다(tools/topic_scan.py의 SEOUL_BLOG_ID). 제목 중복 확인은 건너뜁니다.")
 
     if a.kw:
         for kw in a.kw:

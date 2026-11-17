@@ -11,14 +11,14 @@
 - 블로그 글에는 글쓴이의 개인 정보(직업 배경, 사는 곳, 직접 본 현장, 집 매수 시점 등)를 쓰지 않습니다. 철도·부동산 통찰은 일반 설계·운영 관점으로만 씁니다.
 - 말투는 한국어 존댓말, 자연스럽고 결단력 있게. 불필요한 면책 문구는 쓰지 않습니다.
 - 2026-11-16 이후에는 낮은 모델·무료 버전이 쓸 예정입니다. 그래서 규칙을 글자 그대로 지키고, 사용량 예산(웹검색 횟수 등)을 지킵니다.
-- 도구는 blog-images 저장소(min123172317-max/blog-images)에 있습니다: tools/topic_scan.py, tools/topic_memory.py(터진 주제 기억), tools/blog_stats.py·views_compare.py(통계), tools/minsom_format.py, addressbook.tsv, data/topic_keywords.tsv(메인 키워드).
+- 도구는 blog-images 저장소(min123172317-max/blog-images)에 있습니다: tools/topic_scan.py, tools/topic_memory.py(터진 주제 기억), tools/blog_stats.py·views_compare.py(통계), tools/minsom_format.py, addressbook.tsv, data/topic_keywords.tsv(메인 키워드). 서울 블로그는 같은 도구에 --seoul(topic_scan.py·source_scan.py·mate_score.py)을 붙이고, data/sources_seoul.tsv·data/mate_benchmark_seoul.tsv를 씁니다.
 
 ## 1. 블로그 개요
 - 민솜(네이버 블로그 '민소아세상', https://m.blog.naver.com/minsoaa): 경기 남부(동탄·화성, 수원, 용인, 성남, 평택) 부동산·철도·도로·반도체·재건축 분석.
 - 수익: 네이버 애드포스트, 쿠팡 파트너스. 1순위 목표는 네이버 홈판 조회수, 다음은 네이버 메이트(AI 브리핑 인용) 선정입니다.
 - 독자: 모바일 91%, 남성 약 70%, 40대 이상 중심(60세 이상이 최대 단일층, 50대 이상이 약 절반). 쉬운 서술을 쓰고 약어는 처음에 풀어 씁니다.
 - 유입: 홈판 약 3분의 2, 검색 약 15~18%. 8~10월 조회수는 13.6만 → 12.9만 → 9.1만으로 줄었고 감소분은 전부 홈판 유입이었습니다.
-- 서울 블로그(새 아이디)가 따로 있습니다(rules/seoul.md 참고).
+- 서울 블로그(새 아이디)가 따로 있습니다(rules/seoul.md 참고). 카테고리: 재개발·재건축·서울교통·동네 분석·규제·거래.
 - 사용 안 함: 유료 콘텐츠, 협찬·분양 광고, 주식·경매 블로그, 워드프레스·홈페이지, 스레드.
 
 ## 명령별 규칙 파일 (필수: 해당 명령이 오면 먼저 읽고 글자 그대로 따릅니다)
@@ -30,7 +30,9 @@
 | 글 써줘 / 최종 원고로 발행해줘 | rules/write.md |
 | 이미지 찾아줘 | rules/image.md + rules/format.md (서식 생성에 형광펜·표·틀 규칙이 쓰임) |
 | 자동서식 적용해줘 | rules/format.md |
-| 서울 글감·글·이미지 | rules/seoul.md + 해당 명령의 민솜 규칙 파일 |
+| 서울 글감 찾아줘 | rules/seoul.md (6-10이 순서·채점·출력 전부) |
+| 서울 글 써줘 / 최종 원고로 발행해줘 | rules/seoul.md + rules/write.md (6-12에 적은 항목만 적용) |
+| 서울 이미지 찾아줘 | rules/seoul.md 6-11 + rules/image.md + rules/format.md |
 | 통계 캡처를 올림 / 조회수 분석해줘 | rules/stats.md |
 | 규칙을 바꾸기 전 근거 확인 | rules/data.md |
 | 규칙 최적화 (매주 월요일 예약 '민솜 규칙 주간 최적화') | rules/weekly.md |

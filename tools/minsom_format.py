@@ -15,6 +15,9 @@ v2 원고 순서: 제목 → 서문 → '본문 3줄 요약'(1. 2. 3.) → 소�
        | 84 타입 | 6억 | 8억 |
  - 썸네일은 서식 페이지에 넣지 않는다(네이버가 휴대폰에 없는 사진은 대표 이미지로 못 씀) — 00.jpg는 저장소에만 올리고 민국이 수작업으로 등록.
 
+서울 블로그 원고(2026-11-17, rules/seoul.md 6-4): '본문 3줄 요약' 대신 '한눈에 보기' 줄 + 아래 5줄("항목: 내용"),
+'투자 유의사항' 대신 '확인 기준·유의사항'. 원고에 '한눈에 보기' 줄이 있으면 자동으로 서울 모드가 된다(옵션 없음).
+
 실행:
     python3 tools/minsom_format.py 원고.txt 지시.txt -o index.html
     python3 tools/minsom_format.py 원고.txt -o index.html      # 형광펜·사진 없이 서식만
@@ -87,23 +90,35 @@ def parse_manuscript(text):
     lines = [clean(l) for l in text.replace("\r", "").split("\n")]
     lines = [l for l in lines if l and not re.fullmatch(r'[-=*_]{3,}', l)]
 
+    seoul = any(l.replace(" ", "").startswith("한눈에보기") for l in lines)
+    head, notice_label = ("한눈에 보기", "확인 기준·유의사항") if seoul else ("본문 3줄 요약", "투자 유의사항")
     try:
-        si = next(k for k, l in enumerate(lines) if l.startswith("본문 3줄 요약"))
+        si = next(k for k, l in enumerate(lines) if l.replace(" ", "").startswith(head.replace(" ", "")))
     except StopIteration:
-        die("'본문 3줄 요약' 줄을 찾지 못했습니다.")
+        die("'%s' 줄을 찾지 못했습니다." % head)
     title = lines[0] if si > 0 else ""
-    intro = list(lines[1:si])            # v2: 제목과 요약 사이가 서문
+    intro = list(lines[1:si])            # v2: 제목과 요약(카드) 사이가 서문
     i = si + 1
 
     summary = []
-    while i < len(lines) and len(summary) < 3:
-        m = NUM_LINE.match(lines[i])
-        if not m:
-            die("본문 3줄 요약은 '1. 2. 3.' 번호가 붙은 세 문장이어야 합니다: " + lines[i][:30])
-        summary.append(m.group(2))
-        i += 1
-    if len(summary) != 3:
-        die("본문 3줄 요약이 3줄이 아닙니다.")
+    if seoul:                             # 서울: '항목: 내용' 5줄 (번호가 붙어 있으면 떼고 읽음)
+        while i < len(lines) and len(summary) < 5:
+            l = NUM_LINE.match(lines[i]).group(2) if NUM_LINE.match(lines[i]) else lines[i]
+            if not re.match(r"^[^:：]{1,12}[:：]", l):
+                die("한눈에 보기는 '항목: 내용' 5줄이어야 합니다: " + lines[i][:30])
+            summary.append(l)
+            i += 1
+        if len(summary) != 5:
+            die("한눈에 보기가 5줄이 아닙니다.")
+    else:
+        while i < len(lines) and len(summary) < 3:
+            m = NUM_LINE.match(lines[i])
+            if not m:
+                die("본문 3줄 요약은 '1. 2. 3.' 번호가 붙은 세 문장이어야 합니다: " + lines[i][:30])
+            summary.append(m.group(2))
+            i += 1
+        if len(summary) != 3:
+            die("본문 3줄 요약이 3줄이 아닙니다.")
 
     toc_set = set()
     if i < len(lines) and lines[i].replace(" ", "").startswith("목차"):
@@ -130,9 +145,9 @@ def parse_manuscript(text):
             continue
         if mode == "notice" and re.match(r'^(공식 원문 대조|정정 사항|수정할 부분|연관 키워드)', l):
             break                                   # 원고 뒤에 붙은 납품 메모는 버림
-        if l.startswith("투자 유의사항"):
+        if l.startswith(notice_label) or (seoul and l.startswith("확인 기준")):
             mode = "notice"
-            rest = l[len("투자 유의사항"):].lstrip(" :：")
+            rest = re.sub(r"^확인 기준(·유의사항)?|^투자 유의사항", "", l).lstrip(" :：")
             if rest:
                 notice.append(rest)
             continue
@@ -156,8 +171,8 @@ def parse_manuscript(text):
     if not sections:
         die("소제목('1. …')을 찾지 못했습니다.")
     if not notice:
-        die("'투자 유의사항'을 찾지 못했습니다.")
-    return {"title": title, "summary": summary, "intro": intro,
+        die("'%s'을 찾지 못했습니다." % notice_label)
+    return {"seoul": seoul, "notice_label": notice_label, "title": title, "summary": summary, "intro": intro,
             "sections": sections, "notice": " ".join(notice), "tags": " ".join(tags)}
 
 
@@ -309,16 +324,24 @@ def build(ms, spec):
          '<div id="article">']
     if ms["intro"]:
         h += [render_block(0), HR]
-    h += [CENTER_TITLE % "본문 3줄 요약", BL,
-          '<div style="background:#e5f8cd;border:3px solid #000;padding:18px 20px;">'
-          '<ol style="margin:0;padding-left:22px;">']
-    h += ['<li style="font-weight:700;text-align:justify;">%s</li>' % esc(s) for s in ms["summary"]]
-    h += ['</ol></div>']
+    if ms["seoul"]:   # 서울: 하늘색 카드, '항목: 내용'에서 항목만 굵게
+        h += [CENTER_TITLE % "한눈에 보기", BL,
+              '<div style="background:#e3f0ff;border:3px solid #000;padding:18px 20px;">']
+        for s_ in ms["summary"]:
+            k_, v_ = re.split(r"[:：]", s_, maxsplit=1)
+            h += ['<p style="margin:0;text-align:justify;"><b>%s</b> : %s</p>' % (esc(k_.strip()), esc(v_.strip()))]
+        h += ['</div>']
+    else:
+        h += [CENTER_TITLE % "본문 3줄 요약", BL,
+              '<div style="background:#e5f8cd;border:3px solid #000;padding:18px 20px;">'
+              '<ol style="margin:0;padding-left:22px;">']
+        h += ['<li style="font-weight:700;text-align:justify;">%s</li>' % esc(s) for s in ms["summary"]]
+        h += ['</ol></div>']
     for k, sec in enumerate(ms["sections"], 1):
         h += [HR, '<p style="font-size:24px;font-weight:700;margin:0;">%s</p>' % esc(sec["title"]),
               BL, render_block(k)]
     h += [BL, '<p style="margin:0;"><b><u>%s</u></b></p>' % esc(READ_MORE)]
-    h += [HR, '<p style="font-size:11px;font-weight:700;margin:0;">투자 유의사항</p>',
+    h += [HR, '<p style="font-size:11px;font-weight:700;margin:0;">%s</p>' % esc(ms["notice_label"]),
           '<p style="font-size:11px;margin:0;">%s</p>' % esc(ms["notice"])]
     if ms["tags"]:
         h += [BL, '<p style="font-size:13px;line-height:1.8;margin:0;">%s</p>' % esc(ms["tags"])]
@@ -351,9 +374,16 @@ def main():
         warns.append("제목 %d자 (40자 이내여야 함)" % len(ms["title"]))
     if len(re.findall(r"\d[\d,.]*", ms["title"])) > 2 or "→" in ms["title"]:
         warns.append("제목에 숫자가 많거나 '→'가 있음 (숫자는 1개, 나열 금지)")
-    if len(ms["sections"]) > 5:
+    if ms["seoul"]:   # 서울 규격: 소제목 5~6개, 3,500~5,500자 (rules/seoul.md 6-4)
+        if not 5 <= len(ms["sections"]) <= 6:
+            warns.append("소제목 %d개 (서울 글은 5~6개)" % len(ms["sections"]))
+        if not 3500 <= len(body) <= 5500:
+            warns.append("분량 약 %d자 (서울 글은 3,500~5,500자)" % len(body))
+    elif len(ms["sections"]) > 5:
         warns.append("소제목 %d개 (적중형 4~5개, 검색형 3~4개)" % len(ms["sections"]))
-    if len(body) > 5000 or len(body) < 3000:
+    if ms["seoul"]:
+        pass
+    elif len(body) > 5000 or len(body) < 3000:
         warns.append("분량 약 %d자 (기본 3,000~3,500자, 최대 4,500~5,000자, 3,000자 미만 금지)" % len(body))
     ntab = sum(1 for x in paras_all if x.startswith(TABLE_MARK))
     if ntab > 1:
