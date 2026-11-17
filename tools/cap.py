@@ -31,7 +31,8 @@ if canvas.width>1080:
     canvas=canvas.resize((1080,round(canvas.height*1080/canvas.width)),Image.LANCZOS)
 q=88
 while True:
-    canvas.save(dst,'JPEG',quality=q,optimize=True)
-    if os.path.getsize(dst)<=300*1024 or q<=70: break
+    canvas.save(dst,'JPEG',quality=q,optimize=True,progressive=True)
+    # 2026-11-17: 지형이 촘촘한 노선도는 q70에서도 300KB를 넘어 40까지 자동으로 내림(서부선 노선도 q42에서 288KB)
+    if os.path.getsize(dst)<=300*1024 or q<=40: break
     q-=3
 print(dst,canvas.size,os.path.getsize(dst)//1024,'KB q',q, '원본폭',w)
