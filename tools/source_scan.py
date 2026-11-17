@@ -154,7 +154,8 @@ def blog_items(src, cutoff_ms):
         c = p.get("commentCnt") or 0
         title = html.unescape(p.get("titleWithInspectMessage") or "").strip()
         if (p["addDate"] < cutoff_ms or c < 1 or c < 2 * avg or p.get("marketPost") or p.get("product")
-                or BLOG_SKIP.search(title) or EXCLUDE.search(title)):
+                or BLOG_SKIP.search(title) or EXCLUDE.search(title)
+                or not (HK_KEEP.search(title) or RAIL.search(title))):  # 부동산·철도 글만
             continue
         ratio = c / max(avg, 0.5)
         if not best or ratio > best["ratio"]:
