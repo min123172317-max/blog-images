@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""외부 글감 수집기 (카페·유튜브·한국경제) — 웹검색 0회.
+"""외부 글감 수집기 (카페·유튜브·한국경제·경기일보·국토부) — 웹검색 0회.
 
 실행:  python3 tools/source_scan.py            # 최근 4일(오늘 포함), 기본 몫으로 출력
        python3 tools/source_scan.py --days 3   # 기간 변경
        python3 tools/source_scan.py --all      # 몫 제한 없이 출처별 상위 15개
-필요 허용 주소: naver.me, apis.naver.com, www.youtube.com, www.hankyung.com
+필요 허용 주소: naver.me, apis.naver.com, www.youtube.com, www.hankyung.com, www.kyeonggi.com, www.korea.kr
 출처 목록은 data/sources.tsv (type, name, id, menus) 에서 읽습니다.
 """
 import argparse, datetime as dt, html, json, re, statistics, sys, time
@@ -20,7 +20,7 @@ REGION_TOP = re.compile(r"동탄|화성|병점|진안|봉담|향남")
 REGION_OK = re.compile(r"수원|광교|영통|용인|수지|기흥|처인|성남|분당|판교|위례|평택|고덕|반도체")
 RAIL = re.compile(r"GTX|철도|노선|연장|개통|KTX|SRT|트램|지하철|\d호선|[가-힣]{1,4}선(?![가-힣])|정차|역세권|착공")
 NEWS = re.compile(r"속보|발표|확정|승인|인가|선정|협약|착공|고시|지정|통과|완화|단독")
-EXCLUDE = re.compile(r"청약|분양|당첨|미달|줍줍|모집공고|가입인사|등업|광고|홍보|직거래|매물|대출|대통령|정치|국힘|민주당|한동훈|체포|불법촬영|성범죄|살인|사망|폭행|경찰")
+EXCLUDE = re.compile(r"청약|분양|당첨|미달|줍줍|모집공고|가입인사|등업|광고|홍보|직거래|매물|대출|대통령|정치|국힘|민주당|한동훈|체포|불법촬영|성범죄|살인|사망|폭행|경찰|장관동정")
 SKIP_MENU = re.compile(r"가입|등업|광고|홍보|실거래|직거래|매물|정치|공지|출석")
 # 한국경제 랭킹은 연예·사회가 섞여 있으므로 부동산·지역 낱말이 있어야 통과
 HK_KEEP = re.compile(r"아파트|집값|재건축|재개발|분담금|부동산|토허|GTX|철도|노선|신도시|반도체|" + REGION_TOP.pattern + "|" + REGION_OK.pattern)
@@ -94,6 +94,47 @@ def hankyung_items(src):
     return out
 
 
+def kyeonggi_items(src):
+    """경기일보: 많이 본 기사(컴포넌트 34, 5개) + 지역 주요 기사(41) 중 지역·부동산 낱말이 있는 것."""
+    out = []
+    for comp, label in (("34", "많이 본"), ("41", "지역 주요")):
+        t = get(f"https://www.kyeonggi.com/wps/engine/rest/{comp}?type=COMPONENT", "https://www.kyeonggi.com/")
+        rows = re.findall(r'<a[^>]*href="([^"]*article/\d+)"[^>]*>(.*?)</a>', t, re.S)
+        rank = 0
+        for url, b in rows:
+            title = html.unescape(re.sub("<[^>]+>", "", b)).strip()
+            if len(title) < 9:
+                continue
+            rank += 1
+            if comp == "34" and title.startswith(str(rank)):
+                title = title[len(str(rank)):].strip()  # 앞에 붙은 순위 숫자 떼기
+            if comp == "41" and not HK_KEEP.search(title):
+                continue
+            out.append({"src": src["name"], "title": title, "menu": f"{label} {rank}",
+                        "views": (11 - rank) * (3 if comp == "34" else 1), "comments": 0, "ts": time.time(),
+                        "url": url if url.startswith("http") else "https://www.kyeonggi.com" + url})
+    return out
+
+
+def molit_items(src, cutoff_ms):
+    """정책브리핑 국토교통부 보도자료(국토부 사이트 대신). 조회수 없음 → 낱말로만 거름."""
+    out = []
+    for page in range(1, 6):
+        h = get("https://www.korea.kr/briefing/pressReleaseList.do?repCodeType=%EC%A0%95%EB%B6%80%EB%B6%80%EC%B2%98"
+                f"&repCode=A00006&pageIndex={page}")
+        R = re.findall(r'pressReleaseView\.do\?newsId=(\d+)[^>]*>\s*<span class="text">\s*<strong>(.*?)</strong>'
+                       r'.*?<span class="source">\s*<span>([\d.\-]+)</span>', h, re.S)
+        for nid, t, d in R:
+            ts = dt.datetime.strptime(d.replace(".", "-"), "%Y-%m-%d").replace(tzinfo=KST).timestamp()
+            title = html.unescape(re.sub("<[^>]+>", "", t)).strip()
+            if ts * 1000 >= cutoff_ms and (HK_KEEP.search(title) or RAIL.search(title)):
+                out.append({"src": src["name"], "title": title, "menu": "보도자료", "views": 10, "comments": 0,
+                            "ts": ts, "url": f"https://www.korea.kr/briefing/pressReleaseView.do?newsId={nid}"})
+        if not R or ts * 1000 < cutoff_ms:
+            break
+    return out
+
+
 def score(items):
     """점수 100점: 반응 배수 40 + 지역 25 + 겹침 25 + 댓글 비율 10. 제외 낱말은 0점 처리."""
     by_src = {}
@@ -125,7 +166,9 @@ QUOTA = [("동탄 카페", lambda x: x["group"] == "dongtan", 3),
          ("부동산스터디·새소식", lambda x: x["group"] == "study" and x["kind"] == "새소식", 2),
          ("부동산스터디·지역", lambda x: x["group"] == "study" and x["kind"] == "지역", 3),
          ("유튜브(5만+)", lambda x: x["group"] == "youtube", 4),
-         ("한국경제 랭킹", lambda x: x["group"] == "news", 2)]
+         ("한국경제 랭킹", lambda x: x["group"] == "news", 2),
+         ("경기일보", lambda x: x["group"] == "kyeonggi", 2),
+         ("국토부 보도자료(정책브리핑)", lambda x: x["group"] == "molit", 2)]
 
 
 def main():
@@ -147,6 +190,10 @@ def main():
                 got, grp = youtube_items(s, cutoff_ms, a.min_views), "youtube"
             elif s["type"] == "hankyung":
                 got, grp = hankyung_items(s), "news"
+            elif s["type"] == "kyeonggi":
+                got, grp = kyeonggi_items(s), "kyeonggi"
+            elif s["type"] == "molit":
+                got, grp = molit_items(s, cutoff_ms), "molit"
             else:
                 continue
             for x in got:
