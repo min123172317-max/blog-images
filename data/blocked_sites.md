@@ -17,6 +17,9 @@
 | gg.go.kr (경기도) uploads PDF·eiass | '보안 정책에 의해 차단' 안내 페이지가 내려옴 | 2026-11-17 | 2026 경기도 주거종합계획 PDF, 금정역세권1구역 환경영향평가(eiass/project/126) |
 | lh.or.kr 첨부(attachApiPreviewGallery) | 본문은 열리나 첨부 받기에서 연결 끊김 2회 | 2026-11-17 | 군포산본 선도지구 특별정비구역 지정 완료 보도자료 PDF(list_no=11957) |
 | eminwon.gunpo.go.kr (군포시 고시공고 첨부) | 연결 끊김. 대신 www.gunpo.go.kr 정비사업 공지사항(bbsNo=1003416) 첨부는 받아짐 | 2026-11-17 | 2026 선도지구 외 지정계획 공고 hwp |
+| applyhome.co.kr (청약홈) | 프록시 403(CONNECT tunnel failed) | 2026-11-17 | 노량진8구역 아크로 리버스카이 입주자모집공고 공급금액표 |
+| files-scs.pstatic.net (네이버 부동산 공고문 사본) | 프록시 403 | 2026-11-17 | 아크로 리버스카이 입주자모집공고문 PDF |
+| opengov.seoul.go.kr (서울 정보소통광장) | 연결 끊김(Connection reset) 2회 | 2026-11-17 | 노량진1구역 재정비촉진계획 변경(안) 협의 회신(sanction/35447075) |
 
 ## 참고: 불안정하지만 열리는 곳
 - yongin.go.kr(용인시): 자주 끊기지만 2~4회 재시도하면 열림. 휴대폰 UA로 받음. 첨부 경로 /component/file/ND_fileDownload.do
