@@ -340,7 +340,8 @@ def build(ms, spec):
     for k, sec in enumerate(ms["sections"], 1):
         h += [HR, '<p style="font-size:24px;font-weight:700;margin:0;">%s</p>' % esc(sec["title"]),
               BL, render_block(k)]
-    h += [BL, '<p style="margin:0;"><b><u>%s</u></b></p>' % esc(READ_MORE)]
+    if not ms["seoul"]:   # 서울은 '함께 읽으면 좋은 글' 줄을 넣지 않음(2026-11-17 민국 지시, 글이 쌓이면 다시 넣음)
+        h += [BL, '<p style="margin:0;"><b><u>%s</u></b></p>' % esc(READ_MORE)]
     h += [HR, '<p style="font-size:11px;font-weight:700;margin:0;">%s</p>' % esc(ms["notice_label"]),
           '<p style="font-size:11px;margin:0;">%s</p>' % esc(ms["notice"])]
     if ms["tags"]:
