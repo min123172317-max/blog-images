@@ -1,0 +1,26 @@
+type	name	id	menus
+# 서울 블로그용 (source_scan.py --seoul). 카페는 부동산스터디만(민국 지시 2026-11-17). menus: 174 뉴스모음, 166 부동산 개발, 20 서울시 고시공고, 293 정비구역 정보, 209 도시 정비사업 총괄, 295 재건축, 294 재개발, 239 가로주택, 100 이슈토론, 그 뒤 서울 25개 구 게시판
+cafe	부동산스터디	12730407	174,166,20,293,209,295,294,239,100,16,27,26,36,45,60,43,64,65,44,62,23,184,58,63,66,31,47,54,61,50,22,87,69,159,48
+youtube	땅집고	UCFhF5oooL5ugxHKvTxBD75Q	
+hankyung	한국경제	ranking	
+molit	국토부	A00006	
+blog	달달한 자본가	daldal_uncle	
+blog	서집로그	jjin_a_day	
+blog	호롤롤로	pouing_v	
+blog	똘핀	dolphin_0805	
+blog	우주	doyak12	
+blog	서후아빠	patience53	
+blog	김고슴	kimgoseum94	
+blog	흥부놀부동산	hbnb_realtor	
+blog	새집 다오	kawaii1213a	
+blog	남해사나이	duhen1000je	
+blog	글로리	ceogirl7	
+blog	최피터	dusl110	
+blog	주경야톡	jkytalk	
+blog	달경이	jammanbo_11	
+blog	해벌레	ghijk	
+blog	레이어스블랙	layersblack	
+blog	구운	khk449	
+blog	남자 주부	quietcompound	
+blog	승이	seulgi_tip	
+blog	자본가의길	acecho3580	
