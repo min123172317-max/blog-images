@@ -14,6 +14,9 @@
 | gc.go.kr (과천시) PDF | PDF 주소인데 웹페이지(HTML)가 내려옴 | 2026-11-16 | 철도 추진절차도(민선7기 공약 7-2.pdf) |
 | law.go.kr (국가법령정보센터) | 별표 원문 파일 받기 어려움 | 2026-11-17 | 소음 기준 등 법령 별표 |
 | suwon.go.kr (수원시) ckeditor PDF | 연결 끊김(Connection reset) 2회 | 2026-11-17 | 동탄인덕원선 복선전철 건설사업 현황 PDF |
+| gg.go.kr (경기도) uploads PDF·eiass | '보안 정책에 의해 차단' 안내 페이지가 내려옴 | 2026-11-17 | 2026 경기도 주거종합계획 PDF, 금정역세권1구역 환경영향평가(eiass/project/126) |
+| lh.or.kr 첨부(attachApiPreviewGallery) | 본문은 열리나 첨부 받기에서 연결 끊김 2회 | 2026-11-17 | 군포산본 선도지구 특별정비구역 지정 완료 보도자료 PDF(list_no=11957) |
+| eminwon.gunpo.go.kr (군포시 고시공고 첨부) | 연결 끊김. 대신 www.gunpo.go.kr 정비사업 공지사항(bbsNo=1003416) 첨부는 받아짐 | 2026-11-17 | 2026 선도지구 외 지정계획 공고 hwp |
 
 ## 참고: 불안정하지만 열리는 곳
 - yongin.go.kr(용인시): 자주 끊기지만 2~4회 재시도하면 열림. 휴대폰 UA로 받음. 첨부 경로 /component/file/ND_fileDownload.do
