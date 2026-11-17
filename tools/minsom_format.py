@@ -31,6 +31,7 @@ v2 원고 순서: 제목 → 서문 → '본문 3줄 요약'(1. 2. 3.) → 소�
     파: 정거장이 세 곳뿐인                <- 파랑
     사진: 01.jpg | 청량리로 모이던 열차의 <- 그 글자가 들어간 문단 '뒤'에 사진
     사진: 02.jpg | 3-2                    <- 소제목 3의 2번째 문단 뒤 (0-1 = 서문 1번째 문단)
+    사진: 00.jpg | 0-0                    <- 'N-0' = 그 소제목 첫 문단 바로 위(서문이 1문단일 때 썸네일 자리)
     ※ 마지막 문단 뒤에는 사진을 둘 수 없다(오류로 멈춤, 2026-11-17). 문단과 문단 사이에만 둔다.
 
 글자 조각은 원고에서 딱 한 곳에만 있어야 한다(없거나 여러 곳이면 오류로 멈춤).
@@ -253,12 +254,12 @@ def build(ms, spec):
     for fname, where in spec["photos"]:
         m = re.fullmatch(r'(\d+)-(\d+)', where)
         if m:
-            b, p = int(m.group(1)), int(m.group(2)) - 1
-            if b >= len(blocks) or p < 0 or p >= len(blocks[b]):
+            b, p = int(m.group(1)), int(m.group(2)) - 1   # 'N-0' = 그 소제목(0=서문) 첫 문단 바로 위(p=-1)
+            if b >= len(blocks) or p < -1 or p >= len(blocks[b]):
                 die("사진 위치가 원고 범위를 벗어납니다: " + where)
         else:
             b, p = find_para(where)
-        if p == len(blocks[b]) - 1:   # 2026-11-17 민국 피드백: 마지막 문단 밑 사진은 연속성이 깨짐
+        if p != -1 and p == len(blocks[b]) - 1:   # 2026-11-17 민국 피드백: 마지막 문단 밑 사진은 연속성이 깨짐
             die("사진은 소제목(서문 포함)의 마지막 문단 밑에 둘 수 없습니다(문단과 문단 사이에 두세요): %s | %s"
                 % (fname, where))
         if re.match(r'^https?://', fname):
@@ -270,7 +271,8 @@ def build(ms, spec):
         photos.setdefault((b, p), []).append(url)
 
     def render_block(b):
-        out = []
+        out = ['<p style="margin:0;text-align:center;"><img src="%s" alt="" '
+               'style="max-width:100%%;height:auto;"></p>' % u for u in photos.get((b, -1), [])]
         for p, text in enumerate(blocks[b]):
             if text.startswith(TABLE_MARK):
                 out.append(render_table(text[len(TABLE_MARK):]))
@@ -372,6 +374,10 @@ def main():
         warns.append("제목 %d자 (40자 이내여야 함)" % len(ms["title"]))
     if len(re.findall(r"\d[\d,.]*", ms["title"])) > 2 or "→" in ms["title"]:
         warns.append("제목에 숫자가 많거나 '→'가 있음 (숫자는 1개, 나열 금지)")
+    fp = re.findall(r"(?<![가-힣])(저는|제가|필자는)|(라고 봅니다|라고 생각합니다)", body)
+    fp = [a or b for a, b in fp]
+    if fp:   # 2026-11-17 민국 확정: 1인칭·'~라고 봅니다' 금지(rules/write.md 3-11). 원고는 고치지 않고 알림만
+        warns.append("1인칭 표현 %d곳 (%s) — 단정형 결론으로 바꿔야 함" % (len(fp), ", ".join(sorted(set(fp)))))
     if ms["seoul"]:   # 서울 규격: 소제목 5~6개, 3,500~5,500자 (rules/seoul.md 6-4)
         if not 5 <= len(ms["sections"]) <= 6:
             warns.append("소제목 %d개 (서울 글은 5~6개)" % len(ms["sections"]))
