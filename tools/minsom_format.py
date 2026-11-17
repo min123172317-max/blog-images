@@ -16,7 +16,7 @@ v2 원고 순서: 제목 → 서문 → '본문 3줄 요약'(1. 2. 3.) → 소�
  - 썸네일은 서식 페이지에 넣지 않는다(네이버가 휴대폰에 없는 사진은 대표 이미지로 못 씀) — 00.jpg는 저장소에만 올리고 민국이 수작업으로 등록.
 
 서울 블로그 원고(2026-11-17, rules/seoul.md 6-4): '본문 3줄 요약' 대신 '한눈에 보기' 줄 + 아래 5줄("항목: 내용"),
-'투자 유의사항' 대신 '확인 기준·유의사항'. 원고에 '한눈에 보기' 줄이 있으면 자동으로 서울 모드가 된다(옵션 없음).
+'투자 유의사항' 대신 '확인 기준·유의사항'. 상자는 민솜과 같은 초록 상자에 번호 없이 5줄(2026-11-17). 원고에 '한눈에 보기' 줄이 있으면 자동으로 서울 모드가 된다(옵션 없음).
 
 실행:
     python3 tools/minsom_format.py 원고.txt 지시.txt -o index.html
@@ -324,12 +324,10 @@ def build(ms, spec):
          '<div id="article">']
     if ms["intro"]:
         h += [render_block(0), HR]
-    if ms["seoul"]:   # 서울: 하늘색 카드, '항목: 내용'에서 항목만 굵게
+    if ms["seoul"]:   # 서울(2026-11-17 민국 확정): 민솜과 같은 초록 상자, 번호 없이 '항목: 내용' 5줄을 원고 그대로 굵게
         h += [CENTER_TITLE % "한눈에 보기", BL,
-              '<div style="background:#e3f0ff;border:3px solid #000;padding:18px 20px;">']
-        for s_ in ms["summary"]:
-            k_, v_ = re.split(r"[:：]", s_, maxsplit=1)
-            h += ['<p style="margin:0;text-align:justify;"><b>%s</b> : %s</p>' % (esc(k_.strip()), esc(v_.strip()))]
+              '<div style="background:#e5f8cd;border:3px solid #000;padding:18px 20px;">']
+        h += ['<p style="margin:0;font-weight:700;text-align:justify;">%s</p>' % esc(s_) for s_ in ms["summary"]]
         h += ['</div>']
     else:
         h += [CENTER_TITLE % "본문 3줄 요약", BL,

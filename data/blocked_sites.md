@@ -17,8 +17,12 @@
 | gg.go.kr (경기도) uploads PDF·eiass | '보안 정책에 의해 차단' 안내 페이지가 내려옴 | 2026-11-17 | 2026 경기도 주거종합계획 PDF, 금정역세권1구역 환경영향평가(eiass/project/126) |
 | lh.or.kr 첨부(attachApiPreviewGallery) | 본문은 열리나 첨부 받기에서 연결 끊김 2회 | 2026-11-17 | 군포산본 선도지구 특별정비구역 지정 완료 보도자료 PDF(list_no=11957) |
 | eminwon.gunpo.go.kr (군포시 고시공고 첨부) | 연결 끊김. 대신 www.gunpo.go.kr 정비사업 공지사항(bbsNo=1003416) 첨부는 받아짐 | 2026-11-17 | 2026 선도지구 외 지정계획 공고 hwp |
+| opengov.seoul.go.kr (서울 정보소통광장) | 연결 끊김(Connection reset) | 2026-11-17 | 서부선 2021 예산서·실시협약 민투심 보도자료(press/32463683) |
+| ep.go.kr (은평구) | 연결 끊김(Connection reset) | 2026-11-17 | 새절역 주변 수색·증산 정비구역 자료(시도만) |
 
 ## 참고: 불안정하지만 열리는 곳
 - yongin.go.kr(용인시): 자주 끊기지만 2~4회 재시도하면 열림. 휴대폰 UA로 받음. 첨부 경로 /component/file/ND_fileDownload.do
 - uiwang.go.kr(의왕시): 이미지(/comm/getImage) 받기가 가끔 끊기지만 1~3회 재시도하면 열림(2026-11-17).
 - dongtan.lh.or.kr(LH 동탄): 2026-11-17 '홈페이지 점검 안내'로 막힘(일시 점검으로 보임). 다음에 1회만 다시 시도하고 또 막히면 위 표로 옮김.
+- www.seoul.go.kr 보도자료(news_report.do)·seoulboard.seoul.go.kr 첨부(getFile): 가끔 연결 끊김, 2~3회 재시도하면 열림. 첨부 hwp가 수십 MB라 curl -m 60이 시간초과될 수 있어 길게(백그라운드) 받음(2026-11-17).
+- news.seoul.go.kr/traffic(서울시 교통 뉴스): 잘 열림. 검색 ?s=키워드, 첨부는 /traffic/files/연/월/*.pdf. 도시철도망 계획 보고서(472쪽)도 여기서 받음(2026-11-17).
