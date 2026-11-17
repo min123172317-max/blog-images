@@ -31,5 +31,6 @@
 | 자동서식 적용해줘 | rules/format.md |
 | 서울 글감·글·이미지 | rules/seoul.md + 해당 명령의 민솜 규칙 파일 |
 | 규칙을 바꾸기 전 근거 확인 | rules/data.md |
+| 규칙 최적화 / 채팅 동기화 (매주 월요일 예약 '민솜 규칙 주간 최적화') | rules/weekly.md + rules/chat_sync.md |
 
 규칙 안의 "4-7" 같은 번호는 해당 규칙 파일 안의 번호입니다(4-7은 rules/image.md).
