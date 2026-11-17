@@ -1,0 +1,30 @@
+type	name	id	menus
+# blog: id는 m.blog.naver.com/ID (네이버 메이트 경제 분야 경기 남부 부동산 20곳, data/mate_benchmark.tsv) / cafe: menus 비우면 전체글(광고·가입·실거래 게시판 자동 제외) / youtube: 채널 ID(UC…) / hankyung: 랭킹
+cafe	동사모	30221664	
+cafe	동탄2신도시분양정보	24095040	
+cafe	부동산스터디	12730407	174,295,72,222,287,265,212,210,208,67,88,218,214,281,282
+youtube	땅집고	UCFhF5oooL5ugxHKvTxBD75Q	
+youtube	역쟁이TV	UCn08VTUFQU0YVTPjZub6nXA	
+hankyung	한국경제	ranking	
+kyeonggi	경기일보	popular	
+molit	국토부	A00006	
+blog	슘페터	feargreed	
+blog	마데카솔	dailybuilder	
+blog	글로리	ceogirl7	
+blog	주경야톡	jkytalk	
+blog	Dami	blablabla685	
+blog	똘핀	dolphin_0805	
+blog	흥부놀부동산	hbnb_realtor	
+blog	빠른느림보	ppaneu	
+blog	일공세야	rlawlstp01	
+blog	구운	khk449	
+blog	리뮤	limuu_	
+blog	경제세스푼	wildgirl0611	
+blog	승이	seulgi_tip	
+blog	소금	saltzzza	
+blog	호롤롤로	pouing_v	
+blog	최피터	dusl110	
+blog	우주	doyak12	
+blog	달경이	jammanbo_11	
+blog	김기현 대표	kingnation	
+blog	도토리창고	gov15	

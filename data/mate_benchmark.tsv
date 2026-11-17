@@ -1,0 +1,23 @@
+# 네이버 메이트(2026년 11월 선정, 9월 AI 브리핑 인용 기준) 경제 분야 블로그 176곳 중 경기 남부 부동산 참고 20곳. 2026-11-17 수집.
+# 다시 모으기: node tools/mate_collect.js → python3 -I tools/mate_score.py (웹검색 0회). 관련 글 수 = 최근 글 60개 중 경기 남부 지명+부동산 낱말이 함께 든 제목 수.
+순위	이름	주소	관련글수/60	AI브리핑누적	참고할 점
+1	슘페터	https://m.blog.naver.com/feargreed	18	301379	동탄·솔빛나루역·삼성 성과급, 민솜과 독자 겹침
+2	마데카솔	https://m.blog.naver.com/dailybuilder	4	660275	경기남부광역철도·지하고속도로·병점, 철도 분석 각도
+3	글로리	https://m.blog.naver.com/ceogirl7	27	241327	분당 재건축 선도지구 연재
+4	주경야톡	https://m.blog.naver.com/jkytalk	11	494826	경기 남부 후킹 제목(따옴표 속마음형)
+5	Dami	https://m.blog.naver.com/blablabla685	16	397037	분당 재건축 속보·절차
+6	똘핀	https://m.blog.naver.com/dolphin_0805	6	150879	인덕원·성남 재개발 사업성 숫자
+7	흥부놀부동산	https://m.blog.naver.com/hbnb_realtor	7	150931	시군별 재건축·재개발 구역 총정리
+8	빠른느림보	https://m.blog.naver.com/ppaneu	4	3035784	동탄 트램·병점, AI 인용 최상위
+9	일공세야	https://m.blog.naver.com/rlawlstp01	9	236685	향남·진안신도시·경기남부광역철도
+10	구운	https://m.blog.naver.com/khk449	7	471406	병점·GTX 왜 올랐나 형식
+11	리뮤	https://m.blog.naver.com/limuu_	2	80658	GTX-A 삼성역 무정차·수원 규제
+12	경제세스푼	https://m.blog.naver.com/wildgirl0611	3	255741	경기남부광역철도 신매탄역·위례과천선 짧은 정보글
+13	승이	https://m.blog.naver.com/seulgi_tip	2	245488	인덕원역세권·성남 재개발 청사진
+14	소금	https://m.blog.naver.com/saltzzza	6	84030	동탄 금곡지구·동탄 거래량
+15	호롤롤로	https://m.blog.naver.com/pouing_v	5	382387	분당·영통2구역·위례 착공
+16	최피터	https://m.blog.naver.com/dusl110	7	244167	영통2구역 셈법·평택 고덕
+17	우주	https://m.blog.naver.com/doyak12	2	275049	성남 재개발 임장·분당 사연형 제목
+18	달경이	https://m.blog.naver.com/jammanbo_11	12	99527	경기 단지 필요 현금 계산(형식만)
+19	김기현 대표	https://m.blog.naver.com/kingnation	8	457319	영통·병점 단지 매수 분석(형식만)
+20	도토리창고	https://m.blog.naver.com/gov15	13	140463	동탄·봉담 지역별 정리(형식만)
