@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""외부 글감 수집기 (카페·유튜브·한국경제·경기일보·국토부) — 웹검색 0회.
+"""외부 글감 수집기 (카페·유튜브·한국경제·경기일보·국토부·블로그) — 웹검색 0회.
 
 실행:  python3 tools/source_scan.py            # 최근 4일(오늘 포함), 기본 몫으로 출력
        python3 tools/source_scan.py --days 3   # 기간 변경
        python3 tools/source_scan.py --all      # 몫 제한 없이 출처별 상위 15개
-필요 허용 주소: naver.me, apis.naver.com, www.youtube.com, www.hankyung.com, www.kyeonggi.com, www.korea.kr
+필요 허용 주소: naver.me, apis.naver.com, m.blog.naver.com, www.youtube.com, www.hankyung.com, www.kyeonggi.com, www.korea.kr
 출처 목록은 data/sources.tsv (type, name, id, menus) 에서 읽습니다.
 """
 import argparse, datetime as dt, html, json, re, statistics, sys, time
@@ -135,6 +135,36 @@ def molit_items(src, cutoff_ms):
     return out
 
 
+# 블로그: 맛집·제품 후기·광고 글 제외 (제목 기준)
+BLOG_SKIP = re.compile(r"후기|맛집|추천|체험|협찬|제공받|내돈내산|리뷰|광고|원고료|공구|이벤트|언박싱|카페투어|일상|주말|여행|육아일기")
+
+
+def blog_items(src, cutoff_ms):
+    """블로그 최근 30개 글. 조회수는 대부분 숨김 → 댓글 수로 판단.
+    최근 30개 평균 댓글의 2배 이상(최소 1개)인 cutoff 이후 글 중 배수가 가장 큰 1개만 돌려줌."""
+    bid = src["id"]
+    d = json.loads(get(f"https://m.blog.naver.com/api/blogs/{bid}/post-list?categoryNo=0&itemCount=30&page=1",
+                       f"https://m.blog.naver.com/{bid}"))
+    posts = [p for p in d["result"]["items"] if not p.get("notOpen") and not p.get("postBlocked")]
+    if not posts:
+        return []
+    avg = statistics.mean([p.get("commentCnt") or 0 for p in posts])
+    best = None
+    for p in posts:
+        c = p.get("commentCnt") or 0
+        title = html.unescape(p.get("titleWithInspectMessage") or "").strip()
+        if (p["addDate"] < cutoff_ms or c < 1 or c < 2 * avg or p.get("marketPost") or p.get("product")
+                or BLOG_SKIP.search(title) or EXCLUDE.search(title)):
+            continue
+        ratio = c / max(avg, 0.5)
+        if not best or ratio > best["ratio"]:
+            best = {"src": src["name"], "title": title, "menu": f"{ratio:.1f}배(평균{avg:.1f})",
+                    "views": 0, "comments": c, "ratio": ratio, "ts": p["addDate"] / 1000,
+                    "url": f"https://m.blog.naver.com/{bid}/{p['logNo']}"}
+    time.sleep(0.3)  # 블로그 서버 부담 줄이기
+    return [best] if best else []
+
+
 def score(items):
     """점수 100점: 반응 배수 40 + 지역 25 + 겹침 25 + 댓글 비율 10. 제외 낱말은 0점 처리."""
     by_src = {}
@@ -143,7 +173,8 @@ def score(items):
     for L in by_src.values():
         med = statistics.median([max(1, x["views"]) for x in L])
         for x in L:
-            x["rel"] = x["views"] / med
+            # 블로그는 조회수 대신 '자기 평균 댓글 대비 배수'를 반응 배수로 씀(2배=20점, 4배 이상=40점)
+            x["rel"] = x["ratio"] if "ratio" in x else x["views"] / med
     # 겹침: 지역·철도 핵심 낱말이 2개 이상 출처에서 등장
     tok = re.compile(REGION_TOP.pattern + "|" + REGION_OK.pattern + r"|GTX-?[A-F]|\d호선|[가-힣]{2,4}선(?![가-힣])|트램|터널|재건축")
     seen = {}
@@ -154,7 +185,7 @@ def score(items):
         t = x["title"]
         reg = 25 if REGION_TOP.search(t) else 15 if REGION_OK.search(t) else 0
         ov = 25 if any(len(seen[w]) >= 2 for w in set(tok.findall(t)) if w not in ("반도체",)) else 0
-        cr = min(10, x["comments"] / max(1, x["views"]) * 500)
+        cr = 0 if "ratio" in x else min(10, x["comments"] / max(1, x["views"]) * 500)
         x["score"] = 0 if EXCLUDE.search(t) else round(min(40, x["rel"] * 10) + reg + ov + cr)
         x["kind"] = "철도" if RAIL.search(t) else "새소식" if NEWS.search(t) else "지역"
     return items
@@ -168,7 +199,8 @@ QUOTA = [("동탄 카페", lambda x: x["group"] == "dongtan", 3),
          ("유튜브(5만+)", lambda x: x["group"] == "youtube", 4),
          ("한국경제 랭킹", lambda x: x["group"] == "news", 2),
          ("경기일보", lambda x: x["group"] == "kyeonggi", 2),
-         ("국토부 보도자료(정책브리핑)", lambda x: x["group"] == "molit", 2)]
+         ("국토부 보도자료(정책브리핑)", lambda x: x["group"] == "molit", 2),
+         ("블로그", lambda x: x["group"] == "blog", 5)]  # 블로그마다 최대 1개(blog_items에서 보장)
 
 
 def main():
@@ -192,6 +224,8 @@ def main():
                 got, grp = hankyung_items(s), "news"
             elif s["type"] == "kyeonggi":
                 got, grp = kyeonggi_items(s), "kyeonggi"
+            elif s["type"] == "blog":
+                got, grp = blog_items(s, cutoff_ms), "blog"
             elif s["type"] == "molit":
                 got, grp = molit_items(s, cutoff_ms), "molit"
             else:
@@ -212,7 +246,7 @@ def main():
         for x in L:
             picked.add(id(x))
             d = dt.datetime.fromtimestamp(x["ts"], KST)
-            print(f"{x['score']}\t{x['views']}\t{x['comments']}\t{d:%m-%d}\t{x['src']}/{x['menu'][:10]}\t{x['title'][:50]}\t{x['url']}")
+            print(f"{x['score']}\t{'-' if x['group'] == 'blog' else x['views']}\t{x['comments']}\t{d:%m-%d}\t{x['src']}/{x['menu'][:10]}\t{x['title'][:50]}\t{x['url']}")
     if fails:
         print("\n## 수집 실패(허용 주소·사이트 구조 확인 필요)")
         for f in fails:
