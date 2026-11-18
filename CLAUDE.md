@@ -6,12 +6,13 @@
 - 민국은 휴대폰으로만 작업합니다. PC 앞에서 해야 하는 방법, Chrome 확장·PC 연결 도구는 제안하지 않습니다.
 - "파일을 직접 찾아 첨부해 달라"는 해결책은 절대 제시하지 않습니다.
 - 인수인계·정리 요청은 파일이 아니라 코드 블록으로 줍니다(새 채팅에 바로 붙여 쓰기 위함).
+- 규칙·도구·데이터 변경은 작업 브랜치에 push한 뒤 같은 작업에서 기본 브랜치(main)까지 직접 합칩니다. 민국이 "규칙 적용해줘"·"합쳐줘"라고 하면 PR·확인 질문 없이 main에 반영까지 끝냅니다(민국은 매번 새 채팅에서 일하므로 main에 없으면 적용되지 않음, 2026-11-18 확정). 충돌은 양쪽 내용을 모두 살려 합칩니다.
 - 추천할 때는 항상 순위를 매기고 후킹성(%), 키워드 강도, 추천 이유를 함께 줍니다.
 - 글감·결과 보고에 출처(Sources) 목록은 붙이지 않습니다.
 - 블로그 글에는 글쓴이의 개인 정보(직업 배경, 사는 곳, 직접 본 현장, 집 매수 시점 등)를 쓰지 않습니다. 철도·부동산 통찰은 일반 설계·운영 관점으로만 씁니다.
 - 말투는 한국어 존댓말, 자연스럽고 결단력 있게. 불필요한 면책 문구는 쓰지 않습니다.
 - 2026-11-16 이후에는 낮은 모델·무료 버전이 쓸 예정입니다. 그래서 규칙을 글자 그대로 지키고, 사용량 예산(웹검색 횟수 등)을 지킵니다.
-- 도구는 blog-images 저장소(min123172317-max/blog-images)에 있습니다: tools/topic_scan.py, tools/topic_memory.py(터진 주제 기억), tools/blog_stats.py·views_compare.py(통계), tools/minsom_format.py, tools/law_fetch.py(법령 조문 텍스트 추출), addressbook.tsv, data/topic_keywords.tsv(메인 키워드). 서울 블로그는 같은 도구에 --seoul(topic_scan.py·source_scan.py·mate_score.py)을 붙이고, data/sources_seoul.tsv·data/mate_benchmark_seoul.tsv를 씁니다.
+- 도구는 blog-images 저장소(min123172317-max/blog-images)에 있습니다: tools/topic_scan.py, tools/topic_memory.py(터진 주제 기억), tools/blog_stats.py·views_compare.py(통계), tools/minsom_format.py, tools/law_cap.js(법령 조문 캡처), tools/law_fetch.py(법령 조문 텍스트 추출), addressbook.tsv, data/topic_keywords.tsv(메인 키워드). 서울 블로그는 같은 도구에 --seoul(topic_scan.py·source_scan.py·mate_score.py)을 붙이고, data/sources_seoul.tsv·data/mate_benchmark_seoul.tsv를 씁니다.
 
 ## 1. 블로그 개요
 - 민솜(네이버 블로그 '민소아세상', https://m.blog.naver.com/minsoaa): 경기 남부(동탄·화성, 수원, 용인, 성남, 평택) 부동산·철도·도로·반도체·재건축 분석.
