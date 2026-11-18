@@ -23,6 +23,8 @@
 | files-scs.pstatic.net (네이버 부동산 공고문 사본) | 프록시 403 → 2026-11-17 허용 목록에 추가함. 다음 작업에서 확인 | 2026-11-17 | 아크로 리버스카이 입주자모집공고문 PDF |
 | kbland.kr (KB부동산, 청약홈 대체) | 프록시 403 → 2026-11-17 허용 목록에 추가함(kbland.kr·www·m·api). 다음 작업에서 확인 | 2026-11-17 | 분양 공급금액 |
 | opengov.seoul.go.kr (서울 정보소통광장) | 연결 끊김(Connection reset) 2회 | 2026-11-17 | 노량진1구역 재정비촉진계획 변경(안) 협의 회신(sanction/35447075) |
+| kyeongin.com·newsis.com·1gan.co.kr (경인일보·뉴시스·일간경기) | 이 환경에서 주소를 못 찾음(ENOTFOUND) | 2026-11-17 | 군공항 갈등관리 용역 세부·광주 군공항 일지 → 검색 요약만 참고, 본문엔 안 씀 |
+| likms.assembly.go.kr·open.assembly.go.kr·pal.assembly.go.kr (국회) | 400·연결 끊김 | 2026-11-17 | 법안 원문 → opinion.lawmaking.go.kr 국회입법현황으로 대체(write.md 3-23) |
 
 ## 참고: 불안정하지만 열리는 곳
 - yongin.go.kr(용인시): 자주 끊기지만 2~4회 재시도하면 열림. 휴대폰 UA로 받음. 첨부 경로 /component/file/ND_fileDownload.do
