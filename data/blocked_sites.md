@@ -24,6 +24,7 @@
 | kbland.kr (KB부동산, 청약홈 대체) | 프록시 403 → 2026-11-17 허용 목록에 추가함(kbland.kr·www·m·api). 다음 작업에서 확인 | 2026-11-17 | 분양 공급금액 |
 | opengov.seoul.go.kr (서울 정보소통광장) | 연결 끊김(Connection reset) 2회 | 2026-11-17 | 노량진1구역 재정비촉진계획 변경(안) 협의 회신(sanction/35447075) |
 | gg.go.kr/onnuri (경기도 정비사업 정보공개 온누리) | '보안 정책에 의해 차단' 안내 페이지(429바이트)가 내려옴 | 2026-11-17 | 영통2구역(매탄주공4·5단지) 추진 단계·조감도 |
+| roama.mnd.go.kr (국방부 군공항이전) | http·https 모두 400 Bad Request | 2026-11-17 | 군공항 이전 절차·기부 대 양여 구조도 |
 
 ## 참고: 불안정하지만 열리는 곳
 - yongin.go.kr(용인시): 자주 끊기지만 2~4회 재시도하면 열림. 휴대폰 UA로 받음. 첨부 경로 /component/file/ND_fileDownload.do
@@ -32,4 +33,3 @@
 - www.seoul.go.kr 보도자료(news_report.do)·seoulboard.seoul.go.kr 첨부(getFile): 가끔 연결 끊김, 2~3회 재시도하면 열림. 첨부 hwp가 수십 MB라 curl -m 60이 시간초과될 수 있어 길게(백그라운드) 받음(2026-11-17).
 - news.seoul.go.kr/traffic(서울시 교통 뉴스): 잘 열림. 검색 ?s=키워드, 첨부는 /traffic/files/연/월/*.pdf. 도시철도망 계획 보고서(472쪽)도 여기서 받음(2026-11-17).
 - suwon.go.kr/resources/web/airforce_new(수원시 군공항 이전 페이지 그림): 연결 끊김 잦음, 2~3회 재시도하면 받아짐. PNG가 투명 배경이라 흰 배경 합성 필요(2026-11-17).
-- roama.mnd.go.kr(국방부 군공항이전 사이트): http·https 모두 400 Bad Request(2026-11-17), 시도하지 않음.
