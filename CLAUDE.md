@@ -11,7 +11,7 @@
 - 블로그 글에는 글쓴이의 개인 정보(직업 배경, 사는 곳, 직접 본 현장, 집 매수 시점 등)를 쓰지 않습니다. 철도·부동산 통찰은 일반 설계·운영 관점으로만 씁니다.
 - 말투는 한국어 존댓말, 자연스럽고 결단력 있게. 불필요한 면책 문구는 쓰지 않습니다.
 - 2026-11-16 이후에는 낮은 모델·무료 버전이 쓸 예정입니다. 그래서 규칙을 글자 그대로 지키고, 사용량 예산(웹검색 횟수 등)을 지킵니다.
-- 도구는 blog-images 저장소(min123172317-max/blog-images)에 있습니다: tools/topic_scan.py, tools/topic_memory.py(터진 주제 기억), tools/blog_stats.py·views_compare.py(통계), tools/minsom_format.py, addressbook.tsv, data/topic_keywords.tsv(메인 키워드). 서울 블로그는 같은 도구에 --seoul(topic_scan.py·source_scan.py·mate_score.py)을 붙이고, data/sources_seoul.tsv·data/mate_benchmark_seoul.tsv를 씁니다.
+- 도구는 blog-images 저장소(min123172317-max/blog-images)에 있습니다: tools/topic_scan.py, tools/topic_memory.py(터진 주제 기억), tools/blog_stats.py·views_compare.py(통계), tools/minsom_format.py, tools/law_fetch.py(법령 조문 텍스트 추출), addressbook.tsv, data/topic_keywords.tsv(메인 키워드). 서울 블로그는 같은 도구에 --seoul(topic_scan.py·source_scan.py·mate_score.py)을 붙이고, data/sources_seoul.tsv·data/mate_benchmark_seoul.tsv를 씁니다.
 
 ## 1. 블로그 개요
 - 민솜(네이버 블로그 '민소아세상', https://m.blog.naver.com/minsoaa): 경기 남부(동탄·화성, 수원, 용인, 성남, 평택) 부동산·철도·도로·반도체·재건축 분석.
