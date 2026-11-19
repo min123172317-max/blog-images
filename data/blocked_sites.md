@@ -44,3 +44,4 @@
 - www.seoul.go.kr 보도자료(news_report.do)·seoulboard.seoul.go.kr 첨부(getFile): 가끔 연결 끊김, 2~3회 재시도하면 열림. 첨부 hwp가 수십 MB라 curl -m 60이 시간초과될 수 있어 길게(백그라운드) 받음(2026-11-17).
 - news.seoul.go.kr/traffic(서울시 교통 뉴스): 잘 열림. 검색 ?s=키워드, 첨부는 /traffic/files/연/월/*.pdf. 도시철도망 계획 보고서(472쪽)도 여기서 받음(2026-11-17).
 - suwon.go.kr/resources/web/airforce_new(수원시 군공항 이전 페이지 그림): 연결 끊김 잦음, 2~3회 재시도하면 받아짐. PNG가 투명 배경이라 흰 배경 합성 필요(2026-11-17).
+- snvision.seongnam.go.kr(비전성남): PC 주소는 연결 끊김이 잦음 → m.snvision.seongnam.go.kr/a.html?uid= 로 받으면 열림. 그림 imgdata는 2~3회 재시도(2026-11-19).
