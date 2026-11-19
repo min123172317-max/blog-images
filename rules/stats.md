@@ -3,7 +3,7 @@
 ## 9. 통계 분석 규칙
 9-1. 자료 3가지: data/blog_stats.tsv(글별 댓글 수, 자동 수집), data/views_monthly.tsv(민국이 올린 월간 조회수 순위), data/monthly_summary.tsv(월간 총 조회수·홈판·검색·성별·이웃). 주제 묶음은 data/topic_keywords.tsv입니다.
 9-2. 판정: 터짐 = 한 달 조회수 3,000회 이상, 보통 = 1,000회 이상, 그 밖은 약함. 그 달 조회수 표가 없으면 댓글 10개 이상 = 터짐, 5~9개 = 보통(추정이라고 표시). 공감 수는 읽히지 않으므로 쓰지 않습니다.
-9-3. 매주 월요일(예약 '민솜 규칙 주간 최적화' 안에서): `python3 tools/topic_memory.py --week`를 돌려 지난 7일 성적표를 결과 보고 맨 위에 5줄 이내로 붙입니다(터짐·보통 글 제목, 적중률, 다시 쓸 때가 된 주제). 갱신된 data/blog_stats.tsv는 같은 커밋에 넣습니다.
+9-3. 매주 수요일 00:00(예약 '민솜 규칙 주간 최적화' 안에서): `python3 tools/topic_memory.py --week`를 돌려 지난 7일 성적표를 결과 보고 맨 위에 5줄 이내로 붙입니다(터짐·보통 글 제목, 적중률, 다시 쓸 때가 된 주제). 갱신된 data/blog_stats.tsv는 같은 커밋에 넣습니다.
 9-4. 매월 1일(예약 '민솜 월간 반응 분석'): `python3 tools/topic_memory.py --month 지난달`과 `python3 tools/topic_memory.py --offline`을 돌려 ① 지난달 터짐·보통 글 ② 주제별 적중률 변화 ③ 다음 달 밀 주제 3개와 줄일 주제 3개(순위·후킹%·키워드 강도·이유)를 보고합니다. 끝에 "월간 조회수 순위 캡처를 올려 주시면 추정을 실제 조회수로 바꿉니다" 한 줄을 붙입니다. 웹검색 0회.
 9-5. 민국이 월간 통계 캡처를 올리면(질문 없이 끝까지): ① 조회수 순위 캡처의 각 행을 data/views_monthly.tsv에 추가(month, rank, views, date, title_prefix: 제목 앞 8~12자) ② 유입분석·성별·이웃 캡처 수치를 data/monthly_summary.tsv에 한 줄 추가 ③ `python3 tools/views_compare.py`로 못 맞춘 행이 0인지 확인(있으면 title_prefix를 고침) ④ `python3 tools/topic_memory.py`로 주제 적중률 갱신 ⑤ 새로 터진 주제를 data/topic_keywords.tsv에 추가 ⑥ rules/data.md에 그 달 요약 3줄 추가 ⑦ 커밋·푸시 ⑧ 결과 보고(전달 대비 홈판·검색·30~44세 남성, 터진 글 공통점, 다음 달 주제 추천). 캡처를 더 요구하지 않습니다(일간 그래프 등 추가 캡처 요청 금지, 2026-11-17 민국 확정).
 9-6. 로그인·비밀번호·쿠키를 쓰는 방법은 쓰지 않습니다(계정 보호조치 위험).

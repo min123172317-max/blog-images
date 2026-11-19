@@ -11,6 +11,7 @@
 - 글감·결과 보고에 출처(Sources) 목록은 붙이지 않습니다.
 - 블로그 글에는 글쓴이의 개인 정보(직업 배경, 사는 곳, 직접 본 현장, 집 매수 시점 등)를 쓰지 않습니다. 철도·부동산 통찰은 일반 설계·운영 관점으로만 씁니다.
 - 말투는 한국어 존댓말, 자연스럽고 결단력 있게. 불필요한 면책 문구는 쓰지 않습니다.
+- ★피드백은 작업마다 data/feedback/에 파일로만 남기고, 규칙 수정은 매주 수요일 00:00 주간 최적화에서 한 번에 합니다(2026-11-19 확정). 바로 고치는 예외: 도구 오류·사실 오류 원인·같은 날 같은 실수 2회.
 - 2026-11-16 이후에는 낮은 모델·무료 버전이 쓸 예정입니다. 그래서 규칙을 글자 그대로 지키고, 사용량 예산(웹검색 횟수 등)을 지킵니다.
 - 도구는 blog-images 저장소(min123172317-max/blog-images)에 있습니다: tools/topic_scan.py, tools/topic_memory.py(터진 주제 기억), tools/blog_stats.py·views_compare.py(통계), tools/minsom_format.py, tools/law_cap.js(법령 조문 캡처), tools/law_fetch.py(법령 조문 텍스트 추출), tools/cleanup_table.js(정보몽땅 추진현황 표 캡처), addressbook.tsv, data/topic_keywords.tsv(메인 키워드). 서울 블로그는 같은 도구에 --seoul(topic_scan.py·source_scan.py·mate_score.py)을 붙이고, data/sources_seoul.tsv·data/mate_benchmark_seoul.tsv를 씁니다.
 
@@ -36,6 +37,6 @@
 | 서울 이미지 찾아줘 | rules/seoul.md 6-11 + rules/image.md + rules/format.md |
 | 통계 캡처를 올림 / 조회수 분석해줘 | rules/stats.md |
 | 규칙을 바꾸기 전 근거 확인 | rules/data.md |
-| 규칙 최적화 (매주 월요일 예약 '민솜 규칙 주간 최적화') | rules/weekly.md |
+| 규칙 최적화 (매주 수요일 00:00 예약 '민솜 규칙 주간 최적화', 실패 시 수동 "규칙 최적화 해줘") | rules/weekly.md + data/feedback/README.md |
 
 규칙 안의 "4-7" 같은 번호는 해당 규칙 파일 안의 번호입니다(4-7은 rules/image.md).
