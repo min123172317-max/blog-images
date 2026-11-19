@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """외부 글감 수집기 (카페·유튜브·한국경제·경기일보·국토부·블로그) — 웹검색 0회.
 
-실행:  python3 tools/source_scan.py            # 최근 4일(오늘 포함), 기본 몫으로 출력
+실행:  python3 tools/source_scan.py            # 최근 7일(오늘 포함), 기본 몫으로 출력
+기준(2026-11-19 민국 확정, rules/topic.md 2-18): 카페 조회 1,000↑ 또는 댓글 20↑(서울 500↑·10↑),
+       블로그 7일 내 글 중 댓글 5↑ 또는 공감 20↑ 이면서 자기 최근 30개 평균의 1.5배↑(블로그당 최대 2개),
+       유튜브 5만↑. 신문·국토부는 반응 숫자가 없어 키워드 재료로만 씀.
        python3 tools/source_scan.py --days 3   # 기간 변경
        python3 tools/source_scan.py --all      # 몫 제한 없이 출처별 상위 15개
        python3 tools/source_scan.py --seoul    # 서울 블로그용(data/sources_seoul.tsv, 서울 지명·서울 몫, rules/seoul.md 6-10)
@@ -149,9 +152,12 @@ def molit_items(src, cutoff_ms):
 BLOG_SKIP = re.compile(r"후기|맛집|추천|체험|협찬|제공받|내돈내산|리뷰|광고|원고료|공구|이벤트|언박싱|카페투어|일상|주말|여행|육아일기")
 
 
+BLOG_MIN_C, BLOG_MIN_S, BLOG_MIN_RATIO, BLOG_PER = 5, 20, 1.5, 2
+
+
 def blog_items(src, cutoff_ms):
-    """블로그 최근 30개 글. 조회수는 대부분 숨김 → 댓글 수로 판단.
-    최근 30개 평균 댓글의 2배 이상(최소 1개)인 cutoff 이후 글 중 배수가 가장 큰 1개만 돌려줌."""
+    """블로그 최근 30개 글. 조회수는 대부분 숨김 → 댓글·공감으로 판단.
+    cutoff 이후 글 중 (댓글 5↑ 또는 공감 20↑) 이면서 자기 평균 대비 1.5배↑인 글을 배수 순으로 최대 2개."""
     bid = src["id"]
     d = json.loads(get(f"https://m.blog.naver.com/api/blogs/{bid}/post-list?categoryNo=0&itemCount=30&page=1",
                        f"https://m.blog.naver.com/{bid}"))
@@ -159,21 +165,21 @@ def blog_items(src, cutoff_ms):
     if not posts:
         return []
     avg = statistics.mean([p.get("commentCnt") or 0 for p in posts])
-    best = None
+    avs = statistics.mean([p.get("sympathyCnt") or 0 for p in posts])
+    out = []
     for p in posts:
-        c = p.get("commentCnt") or 0
+        c, sy = p.get("commentCnt") or 0, p.get("sympathyCnt") or 0
         title = html.unescape(p.get("titleWithInspectMessage") or "").strip()
-        if (p["addDate"] < cutoff_ms or c < 1 or c < 2 * avg or p.get("marketPost") or p.get("product")
-                or BLOG_SKIP.search(title) or EXCLUDE.search(title)
+        ratio = max(c / max(avg, 0.5), sy / max(avs, 2))
+        if (p["addDate"] < cutoff_ms or (c < BLOG_MIN_C and sy < BLOG_MIN_S) or ratio < BLOG_MIN_RATIO
+                or p.get("marketPost") or p.get("product") or BLOG_SKIP.search(title) or EXCLUDE.search(title)
                 or not (HK_KEEP.search(title) or RAIL.search(title))):  # 부동산·철도 글만
             continue
-        ratio = c / max(avg, 0.5)
-        if not best or ratio > best["ratio"]:
-            best = {"src": src["name"], "title": title, "menu": f"{ratio:.1f}배(평균{avg:.1f})",
-                    "views": 0, "comments": c, "ratio": ratio, "ts": p["addDate"] / 1000,
-                    "url": f"https://m.blog.naver.com/{bid}/{p['logNo']}"}
+        out.append({"src": src["name"], "title": title, "menu": f"{ratio:.1f}배",
+                    "views": 0, "comments": c, "likes": sy, "ratio": ratio, "ts": p["addDate"] / 1000,
+                    "url": f"https://m.blog.naver.com/{bid}/{p['logNo']}"})
     time.sleep(0.3)  # 블로그 서버 부담 줄이기
-    return [best] if best else []
+    return sorted(out, key=lambda x: -x["ratio"])[:BLOG_PER]
 
 
 def score(items):
@@ -207,15 +213,15 @@ def score(items):
 
 
 # 하루 몫 (민국과 맞춰 가는 값 — 바꾸면 여기만 고칩니다)
-QUOTA = [("동탄 카페", lambda x: x["group"] == "dongtan", 3),
-         ("부동산스터디·철도", lambda x: x["group"] == "study" and x["kind"] == "철도", 2),
-         ("부동산스터디·새소식", lambda x: x["group"] == "study" and x["kind"] == "새소식", 2),
-         ("부동산스터디·지역", lambda x: x["group"] == "study" and x["kind"] == "지역", 3),
+QUOTA = [("동탄 카페", lambda x: x["group"] == "dongtan", 6),
+         ("부동산스터디·철도", lambda x: x["group"] == "study" and x["kind"] == "철도", 4),
+         ("부동산스터디·새소식", lambda x: x["group"] == "study" and x["kind"] == "새소식", 3),
+         ("부동산스터디·지역", lambda x: x["group"] == "study" and x["kind"] == "지역", 5),
          ("유튜브(5만+)", lambda x: x["group"] == "youtube", 4),
          ("한국경제 랭킹", lambda x: x["group"] == "news", 2),
          ("경기일보", lambda x: x["group"] == "kyeonggi", 2),
          ("국토부 보도자료(정책브리핑)", lambda x: x["group"] == "molit", 2),
-         ("블로그", lambda x: x["group"] == "blog", 5)]  # 블로그마다 최대 1개(blog_items에서 보장)
+         ("블로그", lambda x: x["group"] == "blog", 8)]  # 블로그마다 최대 2개(blog_items에서 보장)
 
 
 # 서울 하루 몫 (rules/seoul.md 6-10 — 바꾸면 여기만 고칩니다). 카페는 부동산스터디만.
@@ -233,7 +239,8 @@ SEOUL_MODE = False
 def main():
     global REGION_TOP, REGION_OK, HK_KEEP, EXCLUDE, QUOTA, SEOUL_MODE
     ap = argparse.ArgumentParser()
-    ap.add_argument("--days", type=int, default=3, help="오늘로부터 며칠 전 0시까지 (기본 3 → 4일치)")
+    ap.add_argument("--days", type=int, default=6, help="오늘로부터 며칠 전 0시까지 (기본 6 → 7일치)")
+    ap.add_argument("--cafe-views", type=int, default=None, help="카페 최소 조회(기본 1000, 서울 500). 댓글 기준을 넘으면 통과")
     ap.add_argument("--min-views", type=int, default=50000, help="유튜브 최소 조회수")
     ap.add_argument("--all", action="store_true", help="몫 제한 없이 출처별 상위 15개")
     ap.add_argument("--seoul", action="store_true", help="서울 블로그용 출처·지명·몫")
@@ -269,17 +276,21 @@ def main():
         except Exception as e:  # 한 출처가 막혀도 나머지는 계속
             fails.append(f"{s['name']}: {type(e).__name__} {str(e)[:80]}")
 
+    # 카페 바닥 기준: 조회 또는 댓글 중 하나는 넘어야 후보(2026-11-19 민국 확정)
+    mv = a.cafe_views or (500 if a.seoul else 1000)
+    mc = 10 if a.seoul else 20
+    items = [x for x in items if x["group"] not in ("dongtan", "study") or x["views"] >= mv or x["comments"] >= mc]
     score(items)
     print(f"# {'서울 ' if a.seoul else ''}외부 글감 수집 {dt.datetime.now(KST):%Y-%m-%d %H:%M} (기준: {today - dt.timedelta(days=a.days):%m-%d} 0시 이후, {len(items)}건)")
     picked = set()
     for label, cond, n in QUOTA:
         L = sorted([x for x in items if cond(x) and x["score"] > 0], key=lambda x: -x["score"])[: 15 if a.all else n]
         print(f"\n## {label} ({len(L)})")
-        print("점수\t조회\t댓글\t날짜\t출처/게시판\t제목")
+        print("점수\t조회(블로그=공감)\t댓글\t날짜\t출처/게시판\t제목")
         for x in L:
             picked.add(id(x))
             d = dt.datetime.fromtimestamp(x["ts"], KST)
-            print(f"{x['score']}\t{'-' if x['group'] == 'blog' else x['views']}\t{x['comments']}\t{d:%m-%d}\t{x['src']}/{x['menu'][:10]}\t{x['title'][:50]}\t{x['url']}")
+            print(f"{x['score']}\t{'공감' + str(x['likes']) if x['group'] == 'blog' else x['views']}\t{x['comments']}\t{d:%m-%d}\t{x['src']}/{x['menu'][:10]}\t{x['title'][:50]}\t{x['url']}")
     if fails:
         print("\n## 수집 실패(허용 주소·사이트 구조 확인 필요)")
         for f in fails:
