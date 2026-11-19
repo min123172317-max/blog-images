@@ -369,7 +369,8 @@ def main():
 
     paras_all = [x for x in ms["intro"] + [y for s in ms["sections"] for y in s["paras"]]]
     body = "\n".join([ms["title"]] + ms["summary"] + [s["title"] for s in ms["sections"]] +
-                     [x.replace(TABLE_MARK, "") for x in paras_all] + [ms["notice"]])
+                     [x.replace(TABLE_MARK, "") for x in paras_all] +
+                     ([ms["notice"]] if ms["seoul"] else []))   # 2026-11-19: 민솜 분량에서 투자 유의사항 제외
     # ---- v2 원고 규칙 점검(알림만) ----
     if len(ms["title"]) > 40:
         warns.append("제목 %d자 (40자 이내여야 함)" % len(ms["title"]))
@@ -390,6 +391,10 @@ def main():
         pass
     elif len(body) > 5000 or len(body) < 3000:
         warns.append("분량 약 %d자 (기본 3,000~3,500자, 최대 4,500~5,000자, 3,000자 미만 금지)" % len(body))
+    if not ms["seoul"]:   # 2026-11-19 민국 확정: 투자 유의사항은 4~5문장(rules/write.md 작성 기준)
+        nn = len([s for s in SENT_SPLIT.split(ms["notice"].strip()) if s.strip()])
+        if nn > 5:
+            warns.append("투자 유의사항 %d문장 (4~5문장으로 줄여야 함)" % nn)
     ntab = sum(1 for x in paras_all if x.startswith(TABLE_MARK))
     if ntab > 1:
         warns.append("표 %d개 (글당 최대 1개)" % ntab)
