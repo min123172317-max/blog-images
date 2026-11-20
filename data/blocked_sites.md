@@ -46,3 +46,5 @@
 - suwon.go.kr/resources/web/airforce_new(수원시 군공항 이전 페이지 그림): 연결 끊김 잦음, 2~3회 재시도하면 받아짐. PNG가 투명 배경이라 흰 배경 합성 필요(2026-11-17).
 - snvision.seongnam.go.kr(비전성남): PC 주소는 연결 끊김이 잦음 → m.snvision.seongnam.go.kr/a.html?uid= 로 받으면 열림. 그림 imgdata는 2~3회 재시도(2026-11-19).
 - rt.molit.go.kr(국토부 실거래가 공개시스템): 연결 실패(2026-11-20 올림픽선수촌 서울 글). 매매·전월세 실거래 비교 소제목(6-5 3·4)을 못 채움 → 허용 목록 추가 필요. 같은 날 dailian·daum(v.daum.net)·mtn·fnnews 뉴스 본문도 프록시 403/연결 실패(검색 요약만 참고).
+| dongtan.lh.or.kr (LH 동탄2 홈페이지) | https는 TLS 오류(tlsv1 alert internal error), http는 401 | 2026-11-20 | 화성동탄(2) 지구단위계획 도면18차(목동·신동·송동), 토지이용계획도 18차 |
+| busan.go.kr (부산시 보도자료) | 연결 끊김(Connection reset) 2회 | 2026-11-20 | BuTX 민자적격성 통과 보도자료(nbtnewsBU/1700398) 추진 경과 표 |
