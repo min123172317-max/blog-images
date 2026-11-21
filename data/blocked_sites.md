@@ -49,3 +49,4 @@
 | dongtan.lh.or.kr (LH 동탄2 홈페이지) | https는 TLS 오류(tlsv1 alert internal error), http는 401 | 2026-11-20 | 화성동탄(2) 지구단위계획 도면18차(목동·신동·송동), 토지이용계획도 18차 |
 | busan.go.kr (부산시 보도자료) | 연결 끊김(Connection reset) 2회 | 2026-11-20 | BuTX 민자적격성 통과 보도자료(nbtnewsBU/1700398) 추진 경과 표 |
 | schoolzone.emac.kr (학구도안내서비스 GIS) | 프록시 403(작업 환경 허용 목록 밖) | 2026-11-21 | 위례 초등학교 통학구역 지도 → LH 위례 토지이용계획도로 대체 |
+| suwon.go.kr (수원시) 교통정책 페이지 | 연결 끊김(Connection reset) 1회, 휴대폰 UA도 동일 | 2026-11-21 | 수원발 KTX 직결 노선도 소개 페이지 |
