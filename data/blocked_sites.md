@@ -51,3 +51,4 @@
 | schoolzone.emac.kr (학구도안내서비스 GIS) | 프록시 403(작업 환경 허용 목록 밖) | 2026-11-21 | 위례 초등학교 통학구역 지도 → LH 위례 토지이용계획도로 대체 |
 | suwon.go.kr (수원시) 교통정책 페이지 | 연결 끊김(Connection reset) 1회, 휴대폰 UA도 동일 | 2026-11-21 | 수원발 KTX 직결 노선도 소개 페이지 |
 | www.gg.go.kr/cmmn/download.do (경기도 고시 첨부)·news.suwon.go.kr (수원시 뉴스) | 연결 끊김(Connection reset) 각 2회. 게시판 본문(boardView.do)은 2회째 열림 | 2026-11-23 | 수원 국제회의복합지구 지정 고시문 hwp(행정구역도) |
+| pangyotechnovalley.org (판교테크노밸리 누리집) | 프록시 403(작업 환경 허용 목록 밖) | 2026-11-23 | 2025 판교테크노밸리 실태조사 인포그래픽(임직원·제2판교) |
