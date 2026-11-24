@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""외부 글감 수집기 (카페·유튜브·한국경제·경기일보·국토부·블로그) — 웹검색 0회.
+"""외부 글감 수집기 (카페·유튜브·한국경제·경기일보·블로그 + 공식: 정부·지자체 보도자료) — 웹검색 0회.
 
 실행:  python3 tools/source_scan.py            # 최근 7일(오늘 포함), 기본 몫으로 출력
 기준(2026-11-19 민국 확정, rules/topic.md 2-18): 카페 조회 1,000↑ 또는 댓글 20↑(서울 500↑·10↑),
@@ -8,7 +8,7 @@
        python3 tools/source_scan.py --days 3   # 기간 변경
        python3 tools/source_scan.py --all      # 몫 제한 없이 출처별 상위 15개
        python3 tools/source_scan.py --seoul    # 서울 블로그용(data/sources_seoul.tsv, 서울 지명·서울 몫, rules/seoul.md 6-10)
-필요 허용 주소: naver.me, apis.naver.com, m.blog.naver.com, www.youtube.com, www.hankyung.com, www.kyeonggi.com, www.korea.kr
+필요 허용 주소: naver.me, apis.naver.com, m.blog.naver.com, www.youtube.com, www.hankyung.com, www.kyeonggi.com, www.korea.kr, www.hscity.go.kr, www.suwon.go.kr, www.yongin.go.kr, www.seongnam.go.kr
 출처 목록은 data/sources.tsv (type, name, id, menus) 에서 읽습니다.
 """
 import argparse, datetime as dt, html, json, re, statistics, sys, time
@@ -33,8 +33,14 @@ HK_KEEP = re.compile(r"아파트|집값|재건축|재개발|분담금|부동산|
 def get(url, referer=None, timeout=15):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "ko-KR",
                                                **({"Referer": referer} if referer else {})})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return r.read().decode("utf-8", "ignore")
+    for k in range(3):  # 관공서 사이트는 연결이 자주 끊겨서 2번까지 다시 시도(2026-11-24)
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return r.read().decode("utf-8", "ignore")
+        except Exception:
+            if k == 2:
+                raise
+            time.sleep(2)
 
 
 # ── 서울 모드(--seoul) 낱말: main()에서 위 전역값을 바꿔 끼운다 ──
@@ -130,21 +136,72 @@ def kyeonggi_items(src):
 
 
 def molit_items(src, cutoff_ms):
-    """정책브리핑 국토교통부 보도자료(국토부 사이트 대신). 조회수 없음 → 낱말로만 거름."""
-    out = []
+    """정책브리핑 정부 부처 보도자료(id = 부처 코드: 국토부 A00006, 산업통상부 A00015, 기획예산처 A00040).
+    조회수 없음 → 낱말로만 거름."""
+    out, code = [], src["id"] or "A00006"
     for page in range(1, 6):
         h = get("https://www.korea.kr/briefing/pressReleaseList.do?repCodeType=%EC%A0%95%EB%B6%80%EB%B6%80%EC%B2%98"
-                f"&repCode=A00006&pageIndex={page}")
+                f"&repCode={code}&pageIndex={page}")
         R = re.findall(r'pressReleaseView\.do\?newsId=(\d+)[^>]*>\s*<span class="text">\s*<strong>(.*?)</strong>'
                        r'.*?<span class="source">\s*<span>([\d.\-]+)</span>', h, re.S)
         for nid, t, d in R:
             ts = dt.datetime.strptime(d.replace(".", "-"), "%Y-%m-%d").replace(tzinfo=KST).timestamp()
             title = html.unescape(re.sub("<[^>]+>", "", t)).strip()
-            if ts * 1000 >= cutoff_ms and (HK_KEEP.search(title) or RAIL.search(title)):
+            if ts * 1000 >= cutoff_ms and (HK_KEEP.search(title) or RAIL.search(title)) and not GOV_SKIP.search(title):
                 out.append({"src": src["name"], "title": title, "menu": "보도자료", "views": 10, "comments": 0,
                             "ts": ts, "url": f"https://www.korea.kr/briefing/pressReleaseView.do?newsId={nid}"})
         if not R or ts * 1000 < cutoff_ms:
             break
+    return out
+
+
+# ── 지자체 보도자료(2026-11-24 민국 지시: 공식 자료 글감 칸, rules/topic.md 2-21) ──
+# 행사·수상·복지·축제 같은 홍보성 보도는 빼고, 부동산·교통·개발 사건만 남김
+GOV_KEEP = re.compile(r"철도|노선|역사|GTX|도로|터널|(?<![A-Za-z])IC(?![A-Za-z])|나들목|교통|버스|트램|착공|준공|개통|예산|국비|도시계획|도시기본계획|지구단위|정비|재건축|재개발|"
+                      r"노후계획|택지|신도시|공공주택|산업단지|산단|반도체|클러스터|테크노|부지|개발|용도|그린벨트|개발제한|역세권|학교|"
+                      r"심의|승인|고시|협약|선정|확정|예타|타당성|기본계획|실시설계|공모")
+GOV_SKIP = re.compile(r"축제|행사|수상|표창|봉사|기부|후원|캠페인|교육생|강좌|공연|전시|체험|어르신|돌봄|복지|청소년|청년센터|"
+                      r"자활|상점가|소상공인|일자리박람|간담회 개최|방문|감사패|우수기관|최우수|대상 수상|헌혈|김장|송년|예방접종|우수 ?사례|민원제도|모의훈련|국제|해외|학술|사고|동정")
+CITY = {  # id: (목록 주소(page 자리 {p}), 행 정규식(주소, 제목, 날짜), 상세 주소 앞부분)
+    "hscity": ("https://www.hscity.go.kr/www/user/bbs/BD_selectBbsList.do?q_bbsCode=1051&q_currPage={p}",
+               r'<a href="(/www/user/bbs/BD_selectBbs\.do\?q_bbsCode=1051&amp;q_bbscttSn=\d+[^"]*)">(.*?)</a>.*?등록일자 : ">(\d{4}-\d{2}-\d{2})',
+               "https://www.hscity.go.kr"),
+    "yongin": ("https://www.yongin.go.kr/user/bbs/BD_selectBbsList.do?q_bbsCode=1020&q_currPage={p}",
+               r'href="(BD_selectBbs\.do\?q_bbsCode=1020&amp;q_bbscttSn=\d+)"[^>]*>(.*?)</a>.*?<li>(\d{4}-\d{2}-\d{2})</li>',
+               "https://www.yongin.go.kr/user/bbs/"),
+    "suwon": ("https://www.suwon.go.kr/web/board/BD_board.list.do?bbsCd=1043&q_currPage={p}",
+              r"jsView\('1043', '(\d+)'[^>]*>\s*(.*?)</a>.*?(\d{4}/\d{2}/\d{2})",
+              "https://www.suwon.go.kr/web/board/BD_board.view.do?bbsCd=1043&seq="),
+    "seongnam": ("https://www.seongnam.go.kr/bbs010501?cntPerPage=60&p={p}",
+                 r"fn_move_form\('(\d+)'\)\">\s*(.*?)<i>.*?<b>작성일</b></span>\s*<span>(\d{4}-\d{2}-\d{2})",
+                 "https://www.seongnam.go.kr/bbs010501/"),
+}
+
+
+def gov_items(src, cutoff_ms):
+    """지자체 보도자료 목록(웹검색 0회). 관공서 사이트는 자주 끊겨서 쪽마다 2번까지 다시 시도."""
+    url, pat, base = CITY[src["id"]]
+    out, seen = [], set()
+    for page in range(1, 2 if src["id"] == "seongnam" else 7):
+        h = get(url.format(p=page), timeout=25)
+        rows = re.findall(pat, h, re.S)
+        if page == 1 and not rows:  # 차단·오류 페이지가 빈 목록으로 보이지 않게 실패로 기록
+            raise RuntimeError("목록을 읽지 못함(차단·구조 변경)")
+        old = False
+        for link, t, d in rows:
+            title = re.sub(r"\s+", " ", html.unescape(re.sub("<[^>]+>", "", t))).strip()
+            ts = dt.datetime.strptime(d.replace("/", "-"), "%Y-%m-%d").replace(tzinfo=KST).timestamp()
+            if ts * 1000 < cutoff_ms:
+                old = True
+                continue
+            if title in seen or GOV_SKIP.search(title) or not GOV_KEEP.search(title):
+                continue
+            seen.add(title)
+            out.append({"src": src["name"], "title": title, "menu": "보도자료", "views": 10, "comments": 0,
+                        "ts": ts, "url": base + html.unescape(link)})
+        if not rows or old:
+            break
+        time.sleep(0.5)
     return out
 
 
@@ -220,8 +277,10 @@ QUOTA = [("동탄 카페", lambda x: x["group"] == "dongtan", 6),
          ("유튜브(5만+)", lambda x: x["group"] == "youtube", 4),
          ("한국경제 랭킹", lambda x: x["group"] == "news", 2),
          ("경기일보", lambda x: x["group"] == "kyeonggi", 2),
-         ("국토부 보도자료(정책브리핑)", lambda x: x["group"] == "molit", 2),
-         ("블로그", lambda x: x["group"] == "blog", 8)]  # 블로그마다 최대 2개(blog_items에서 보장)
+         ("블로그", lambda x: x["group"] == "blog", 8),
+         # ↓ 공식 자료 칸(2026-11-24 민국: 공식 자료 기반 인사이트로 복귀, rules/topic.md 2-21)
+         ("[공식] 정부 보도자료(국토부·산업부·기획예산처)", lambda x: x["group"] == "molit", 6),
+         ("[공식] 지자체 보도자료(화성·수원·용인·성남)", lambda x: x["group"] == "city", 10)]  # 블로그마다 최대 2개(blog_items에서 보장)
 
 
 # 서울 하루 몫 (rules/seoul.md 6-10 — 바꾸면 여기만 고칩니다). 카페는 부동산스터디만.
@@ -268,6 +327,8 @@ def main():
                 got, grp = blog_items(s, cutoff_ms), "blog"
             elif s["type"] == "molit":
                 got, grp = molit_items(s, cutoff_ms), "molit"
+            elif s["type"] == "city":
+                got, grp = gov_items(s, cutoff_ms), "city"
             else:
                 continue
             for x in got:
