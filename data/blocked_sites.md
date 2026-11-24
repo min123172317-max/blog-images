@@ -52,3 +52,7 @@
 | suwon.go.kr (수원시) 교통정책 페이지 | 연결 끊김(Connection reset) 1회, 휴대폰 UA도 동일 | 2026-11-21 | 수원발 KTX 직결 노선도 소개 페이지 |
 | www.gg.go.kr/cmmn/download.do (경기도 고시 첨부)·news.suwon.go.kr (수원시 뉴스) | 연결 끊김(Connection reset) 각 2회. 게시판 본문(boardView.do)은 2회째 열림 | 2026-11-23 | 수원 국제회의복합지구 지정 고시문 hwp(행정구역도) |
 | pangyotechnovalley.org (판교테크노밸리 누리집) | 프록시 403(작업 환경 허용 목록 밖) | 2026-11-23 | 2025 판교테크노밸리 실태조사 인포그래픽(임직원·제2판교) |
+| 언론사 묶음: yna·newdaily(프록시 403), kgnews·heraldk·ajunews·segye·etnews·dailymedi·cm.asiae·metroseoul·m.go.seoul.co.kr(ENOTFOUND), biz.sbs·bizwatch(본문 0자), dailian(일부 205바이트) | 열리지 않음. MTN은 열림, kyeonggi.com은 curl로 www.만 됨 | 2026-11-25 | 글 근거 기사 확인 → 언론사 주소는 1회 실패하면 바로 공식 원문으로 |
+| dapt.kr·nowon.kr·eminwon.nowon.kr | 프록시 403 | 2026-11-25 | 노원 정비사업 공람·고시 |
+| yuc.co.kr·eiec.kdi.re.kr·KDI pimac 일부 | 연결 실패·빈 페이지 | 2026-11-25 | 예타 보고서·유치권 자료 |
+| www.gjcity.go.kr 그림·suwon.go.kr ND_fileDownload PDF | 받는 중 끊김 | 2026-11-25 | 광주시 노선 그림·수원시 첨부 PDF |

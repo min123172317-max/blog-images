@@ -350,48 +350,79 @@ def build(ms, spec):
     return "".join(h), warns
 
 
-def main():
-    ap = argparse.ArgumentParser(description="민솜 서식 변환")
-    ap.add_argument("manuscript")
-    ap.add_argument("spec", nargs="?")
-    ap.add_argument("-o", "--out", default="index.html")
-    a = ap.parse_args()
+# 2026-11-25 주간 최적화: 글쓰기 세부 규칙을 기계 점검으로 옮김(rules/write.md '자동 점검' 표).
+BANNED = ["SRT", "결절점", "총정리", "진짜 이유", "앞으로의 전망", "여러분은 어떻게", "정리하며"]
+# AI 티 나는 상투 표현(2026-11-25 민국 지적: "글이 너무 AI가 쓴 것 같다"). 2곳 이상이면 알림.
+AI_PHRASES = ["셈입니다", "라는 점입니다", "주목할 ", "눈여겨볼", "살펴보겠습니다", "짚어봤습니다", "짚어보겠습니다",
+              "알아보겠습니다", "의미합니다", "다시 말해", "한마디로", "무엇보다", "이처럼", "그렇다면",
+              "열쇠", "신호탄", "숨은 승자", "판도", "의 무게", "그림이 달라", "시계가", "답은 ", "핵심은 "]
+READER_TOWNS = "동탄|화성|병점|봉담|향남|수원|영통|광교|매교|용인|기흥|수지|처인|남사|성남|분당|판교|야탑|위례|평택|지제|고덕|오산"
 
-    try:
-        ms = parse_manuscript(open(a.manuscript, encoding="utf-8").read())
-        spec = parse_spec(open(a.spec, encoding="utf-8").read() if a.spec else "")
-    except OSError as e:
-        die("파일을 열 수 없습니다: %s" % e)
 
-    page, warns = build(ms, spec)
-    with open(a.out, "w", encoding="utf-8") as f:
-        f.write(page)
-
-    paras_all = [x for x in ms["intro"] + [y for s in ms["sections"] for y in s["paras"]]]
+def review(ms, paras_all):
+    """원고 점검. (경고 목록, 분량) 반환. 원고는 고치지 않는다."""
+    warns = []
     body = "\n".join([ms["title"]] + ms["summary"] + [s["title"] for s in ms["sections"]] +
                      [x.replace(TABLE_MARK, "") for x in paras_all] +
                      ([ms["notice"]] if ms["seoul"] else []))   # 2026-11-19: 민솜 분량에서 투자 유의사항 제외
-    # ---- v2 원고 규칙 점검(알림만) ----
+    text_only = "\n".join([ms["title"]] + ms["summary"] + [x for x in paras_all if not x.startswith(TABLE_MARK)])
+    # ---- 제목 ----
     if len(ms["title"]) > 40:
         warns.append("제목 %d자 (40자 이내여야 함)" % len(ms["title"]))
     if len(re.findall(r"\d[\d,.]*", ms["title"])) > 2 or "→" in ms["title"]:
         warns.append("제목에 숫자가 많거나 '→'가 있음 (숫자는 1개, 나열 금지)")
+    if not ms["seoul"] and not re.search(READER_TOWNS, ms["title"]):
+        warns.append("제목에 독자 동네 이름(동탄·수원·용인·화성 등)이 없음 — 경기남부 밖 주제는 '동탄' 필수")
+    # ---- 금지 표기 ----
+    for w in BANNED:
+        n = body.count(w)
+        if n:
+            warns.append("금지 표기 '%s' %d곳%s" % (w, n, " — 고속열차는 KTX로" if w == "SRT" else ""))
     fp = re.findall(r"(?<![가-힣])(저는|제가|필자는)|(라고 봅니다|라고 생각합니다)", body)
     fp = [a or b for a, b in fp]
-    if fp:   # 2026-11-17 민국 확정: 1인칭·'~라고 봅니다' 금지(rules/write.md 3-11). 원고는 고치지 않고 알림만
+    if fp:   # 2026-11-17 민국 확정: 1인칭·'~라고 봅니다' 금지
         warns.append("1인칭 표현 %d곳 (%s) — 단정형 결론으로 바꿔야 함" % (len(fp), ", ".join(sorted(set(fp)))))
+    # ---- AI 티 ----
+    hits = [(w, text_only.count(w)) for w in AI_PHRASES if text_only.count(w)]
+    if sum(n for _, n in hits) >= 2:
+        warns.append("AI 티 표현 %d곳 (%s) — 사실 문장으로 바꿈" % (sum(n for _, n in hits), ", ".join("%s×%d" % h for h in hits)))
+    na = len(re.findall(r"이 아니라|가 아니라", text_only))
+    if na > 2:
+        warns.append("'A가 아니라 B' 문형 %d곳 (글당 2곳 이내)" % na)
+    sents = [x for p in paras_all if not p.startswith(TABLE_MARK) for x in SENT_SPLIT.split(p) if x.strip()]
+    longs = [x for x in sents if len(x) > 80]
+    if longs:
+        warns.append("80자 넘는 문장 %d개 (한 문장에 한 내용) 예: %s…" % (len(longs), longs[0][:25]))
+    rq = [x for x in sents if x.rstrip().endswith("?")]
+    if rq:
+        warns.append("본문 물음표 문장 %d개 (본문은 평서문, 질문은 소제목에만)" % len(rq))
+    # ---- 구조 ----
     if ms["seoul"]:   # 서울 규격: 소제목 5~6개, 3,500~5,500자 (rules/seoul.md 6-4)
         if not 5 <= len(ms["sections"]) <= 6:
             warns.append("소제목 %d개 (서울 글은 5~6개)" % len(ms["sections"]))
         if not 3500 <= len(body) <= 5500:
             warns.append("분량 약 %d자 (서울 글은 3,500~5,500자)" % len(body))
-    elif len(ms["sections"]) > 5:
-        warns.append("소제목 %d개 (적중형 4~5개, 검색형 3~4개)" % len(ms["sections"]))
-    if ms["seoul"]:
-        pass
-    elif len(body) > 5000 or len(body) < 3000:
-        warns.append("분량 약 %d자 (기본 3,000~3,500자, 최대 4,500~5,000자, 3,000자 미만 금지)" % len(body))
-    if not ms["seoul"]:   # 2026-11-19 민국 확정: 투자 유의사항은 4~5문장(rules/write.md 작성 기준)
+    else:
+        if len(ms["sections"]) > 6:
+            warns.append("소제목 %d개 (적중형 5개, 검색형 3~4개)" % len(ms["sections"]))
+        if len(body) > 5000 or len(body) < 3000:
+            warns.append("분량 약 %d자 (기본 3,000~3,500자, 최대 5,000자, 3,000자 미만 금지)" % len(body))
+    sizes = []
+    for sec in ms["sections"]:
+        n = len(sec["title"]) + sum(len(x.replace(TABLE_MARK, "")) for x in sec["paras"])
+        sizes.append(n)
+        if n > 900:
+            warns.append("소제목 '%s' %d자 (최대 900자, 넘으면 둘로 나눔)" % (sec["title"][:15], n))
+    if len(sizes) > 1 and min(sizes) and max(sizes) > min(sizes) * 1.5:
+        warns.append("소제목 길이 차이 큼: 가장 긴 것 %d자 / 가장 짧은 것 %d자 (1.5배 이내)" % (max(sizes), min(sizes)))
+    if ms["sections"]:
+        last = [x for x in ms["sections"][-1]["paras"] if not x.startswith(TABLE_MARK)]
+        if last and last[-1].rstrip().endswith("?"):
+            warns.append("마지막 문장이 의문문 — 단정형 결론 + 이유로 끝냄")
+    arts = set(re.findall(r"제\d+조(?:의\d+)?", text_only))
+    if len(arts) > 1:
+        warns.append("법 조문 번호 %d종 (%s) — 글당 1개" % (len(arts), ", ".join(sorted(arts))))
+    if not ms["seoul"]:   # 2026-11-19 민국 확정: 투자 유의사항은 4~5문장
         nn = len([s for s in SENT_SPLIT.split(ms["notice"].strip()) if s.strip()])
         if nn > 5:
             warns.append("투자 유의사항 %d문장 (4~5문장으로 줄여야 함)" % nn)
@@ -410,14 +441,44 @@ def main():
             for c in r:
                 if len(c) > limit:
                     warns.append("표 칸 '%s' %d자 (열 %d개면 칸당 %d자 이내, 휴대폰 좌우 스와이프 방지)" % (c, len(c), ncol, limit))
-    longp = sum(1 for x in paras_all if not x.startswith(TABLE_MARK) and len(SENT_SPLIT.split(x)) > 4)
+    longp = sum(1 for x in paras_all if not x.startswith(TABLE_MARK) and len(SENT_SPLIT.split(x)) > 3)
     if longp:
-        warns.append("문장이 5개 이상인 문단 %d개 (문단은 2~3문장)" % longp)
-    print("완료: %s (%d자)" % (a.out, len(page)))
-    print("소제목 %d개 / 형광펜 %d개 / 사진 %d장 / 원고 분량 약 %d자(태그 제외)"
-          % (len(ms["sections"]), len(spec["marks"]), len(spec["photos"]), len(body)))
+        warns.append("문장이 4개 이상인 문단 %d개 (문단은 2~3문장)" % longp)
     if not ms["tags"]:
         warns.append("태그 줄이 없습니다.")
+    return warns, len(body)
+
+
+def main():
+    ap = argparse.ArgumentParser(description="민솜 서식 변환")
+    ap.add_argument("manuscript")
+    ap.add_argument("spec", nargs="?")
+    ap.add_argument("-o", "--out", default="index.html")
+    ap.add_argument("--check", action="store_true", help="서식 페이지를 만들지 않고 원고 점검만")
+    a = ap.parse_args()
+
+    try:
+        ms = parse_manuscript(open(a.manuscript, encoding="utf-8").read())
+        spec = parse_spec(open(a.spec, encoding="utf-8").read() if a.spec and not a.check else "")
+    except OSError as e:
+        die("파일을 열 수 없습니다: %s" % e)
+
+    paras_all = [x for x in ms["intro"] + [y for s in ms["sections"] for y in s["paras"]]]
+    warns = []
+    if not a.check:
+        page, warns = build(ms, spec)
+        with open(a.out, "w", encoding="utf-8") as f:
+            f.write(page)
+    more, nbody = review(ms, paras_all)
+    warns += more
+    if a.check:
+        print("점검: 소제목 %d개 / 원고 분량 약 %d자(태그·유의사항 제외)" % (len(ms["sections"]), nbody))
+        if not warns:
+            print("통과 - 확인 필요 없음")
+    else:
+        print("완료: %s (%d자)" % (a.out, len(page)))
+        print("소제목 %d개 / 형광펜 %d개 / 사진 %d장 / 원고 분량 약 %d자(태그 제외)"
+              % (len(ms["sections"]), len(spec["marks"]), len(spec["photos"]), nbody))
     for w in warns:
         print("확인 필요 - " + w)
 

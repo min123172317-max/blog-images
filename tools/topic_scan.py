@@ -68,7 +68,7 @@ def get(url, referer=None):
 
 
 def my_titles(limit):
-    out = []
+    out, seen = [], set()
     if not BLOG_ID:
         return out
     page = 1
@@ -83,8 +83,15 @@ def my_titles(limit):
         posts = d.get("postList", [])
         if not posts:
             break
-        for x in posts:
-            out.append((x.get("addDate", "").strip(), html.unescape(urllib.parse.unquote_plus(x["title"]))))
+        added = 0
+        for x in posts:   # 2026-11-25: 글이 적은 블로그는 마지막 쪽 뒤에도 같은 쪽을 돌려줌 → 중복 빼고, 새 글이 없으면 멈춤
+            item = (x.get("addDate", "").strip(), html.unescape(urllib.parse.unquote_plus(x["title"])))
+            if item not in seen:
+                seen.add(item)
+                out.append(item)
+                added += 1
+        if not added:
+            break
         page += 1
     return out[:limit]
 

@@ -22,7 +22,7 @@
 ## 비교표 채우는 법 (data/weekly_compare.tsv, 탭 구분)
 - 주간: 지난 수요일~이번 화요일(예: 2026-11-19~11-25).
 - 글_수: data/feedback/ 중 종류가 '글'인 파일 수(없으면 글 폴더 YYMMDD-* 수).
-- 규칙수정_커밋: `git log origin/main --since=<시작일> --until=<끝난 다음 날> --oneline -- rules CLAUDE.md | grep -vic merge`.
+- 규칙수정_커밋: `git log origin/main --since="<시작일> 00:00 +0900" --until="<끝난 다음 날> 00:00 +0900" --oneline -- rules CLAUDE.md | grep -vic merge` (시각을 빼면 0이 나옴, 2026-11-25).
 - 글당_검색 / 글당_헛걸음: 이번 주 피드백 파일의 '사용량' 줄 숫자 평균(소수 1자리).
 - 지난주글_평균반응: topic_memory --week 성적표의 평균 점수(댓글+공감). 실제 조회수 캡처를 받은 주는 조회수로 바꾸고 메모에 적습니다.
 - 메모: 이번 주 가장 큰 변화 한 줄.
