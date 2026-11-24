@@ -441,9 +441,47 @@ def review(ms, paras_all):
             for c in r:
                 if len(c) > limit:
                     warns.append("표 칸 '%s' %d자 (열 %d개면 칸당 %d자 이내, 휴대폰 좌우 스와이프 방지)" % (c, len(c), ncol, limit))
-    longp = sum(1 for x in paras_all if not x.startswith(TABLE_MARK) and len(SENT_SPLIT.split(x)) > 3)
+    # 2026-11-24 민국 확정: "거의 모든 문장마다 줄바꿈한 느낌" → 소제목 문단은 3~4문장, 소제목당 3~5문단.
+    # 짧은 꼬리 문단(1~2문장)은 형광펜을 칠하기 애매하므로 앞 문단에 합칩니다.
+    def nsent(x):
+        return len([s for s in SENT_SPLIT.split(x) if s.strip()])
+    shortp, longp, badsec = 0, 0, []
+    for sec in ms["sections"]:
+        ps = [x for x in sec["paras"] if not x.startswith(TABLE_MARK)]
+        shortp += sum(1 for x in ps if nsent(x) < 3)
+        longp += sum(1 for x in ps if nsent(x) > 4)
+        if not 3 <= len(ps) <= 5:
+            badsec.append("%s %d문단" % (sec["title"][:10], len(ps)))
+    if shortp:
+        warns.append("소제목 안 1~2문장 문단 %d개 (문단은 3~4문장, 짧은 꼬리 문단은 앞 문단에 합침)" % shortp)
     if longp:
-        warns.append("문장이 4개 이상인 문단 %d개 (문단은 2~3문장)" % longp)
+        warns.append("문장이 5개 이상인 문단 %d개 (문단은 3~4문장)" % longp)
+    if badsec:
+        warns.append("소제목 문단 수가 3~5개 밖: %s" % ", ".join(badsec))
+    # ---- AI 티 2단계(2026-11-24 분석): 같은 어미 반복·명사형 종결·출처 머리말 반복·같은 숫자 반복 ----
+    run, runs = 0, 0
+    for s in sents:
+        if s.rstrip().endswith("입니다."):
+            run += 1
+            if run == 4:
+                runs += 1
+        else:
+            run = 0
+    if runs:
+        warns.append("'~입니다.'로 끝나는 문장 4개 연속 %d곳 (어미를 섞음: ~합니다·~됩니다·~있습니다·~났습니다)" % runs)
+    nom = re.findall(r"(구조|규모|상태|단계|상황|모습|흐름|구간|수준)입니다", text_only)
+    if len(nom) > 2:
+        warns.append("명사형 종결('~구조/규모/상태/단계입니다') %d곳 (글당 2곳 이내, 동사로 끝냄)" % len(nom))
+    for sec in ms["sections"]:
+        st = " ".join(x for x in sec["paras"] if not x.startswith(TABLE_MARK))
+        n = len(re.findall(r"\d{4}년 \d{1,2}월(?: \d{1,2}일)? ?(?:보도자료|발표|계획|자료)", st))
+        if n > 1:
+            warns.append("소제목 '%s' 출처 머리말(기관·날짜·발표) %d번 (소제목당 1번, 나머지는 생략)" % (sec["title"][:10], n))
+    sec_text = " ".join(x for s in ms["sections"] for x in s["paras"] if not x.startswith(TABLE_MARK))
+    nums = re.findall(r"\d[\d,.]*(?:분|%|억 원|만 명|천 명|km|만 대)", sec_text)   # 연도는 일정 글에서 반복이 자연스러워 제외
+    rep = sorted({(n, nums.count(n)) for n in nums if nums.count(n) >= 4}, key=lambda z: -z[1])
+    if rep:
+        warns.append("같은 숫자 4번 이상 반복: %s (핵심 숫자는 2~3번, 소제목 결론끼리 겹치지 않게)" % ", ".join("%s×%d" % r for r in rep[:4]))
     if not ms["tags"]:
         warns.append("태그 줄이 없습니다.")
     return warns, len(body)
