@@ -13,7 +13,7 @@
 - 말투는 한국어 존댓말, 자연스럽고 결단력 있게. 불필요한 면책 문구는 쓰지 않습니다.
 - ★피드백은 작업마다 data/feedback/에 파일로만 남기고, 규칙 수정은 매주 수요일 00:00 주간 최적화에서 한 번에 합니다(2026-11-19 확정). 바로 고치는 예외: 도구 오류·사실 오류 원인·같은 날 같은 실수 2회.
 - 2026-11-16 이후에는 낮은 모델·무료 버전이 쓸 예정입니다. 그래서 규칙을 글자 그대로 지키고, 사용량 예산(웹검색 횟수 등)을 지킵니다.
-- 도구는 blog-images 저장소(min123172317-max/blog-images)에 있습니다: tools/topic_scan.py, tools/topic_memory.py(터진 주제 기억), tools/blog_stats.py·views_compare.py(통계), tools/minsom_format.py, tools/law_cap.js(법령 조문 캡처), tools/law_fetch.py(법령 조문 텍스트 추출), tools/cleanup_table.js(정보몽땅 추진현황 표 캡처), addressbook.tsv, data/topic_keywords.tsv(메인 키워드). 서울 블로그는 같은 도구에 --seoul(topic_scan.py·source_scan.py·mate_score.py)을 붙이고, data/sources_seoul.tsv·data/mate_benchmark_seoul.tsv를 씁니다.
+- 도구는 blog-images 저장소(min123172317-max/blog-images)에 있습니다: tools/topic_scan.py, tools/topic_memory.py(터진 주제 기억), tools/blog_stats.py·views_compare.py(통계), tools/minsom_format.py, tools/law_cap.js(법령 조문 캡처), tools/law_fetch.py(법령 조문 텍스트 추출), tools/cleanup_table.js(정보몽땅 추진현황 표 캡처), addressbook.tsv, data/topic_keywords.tsv(메인 키워드), data/special_bank.tsv(특집 자료 창고, rules/topic.md 2-22). 서울 블로그는 같은 도구에 --seoul(topic_scan.py·source_scan.py·mate_score.py)을 붙이고, data/sources_seoul.tsv·data/mate_benchmark_seoul.tsv를 씁니다.
 
 ## 1. 블로그 개요
 - 민솜(네이버 블로그 '민소아세상', https://m.blog.naver.com/minsoaa): 경기 남부(동탄·화성, 수원, 용인, 성남, 평택) 부동산·철도·도로·반도체·재건축 분석.
