@@ -1,5 +1,5 @@
 type	name	id	menus
-# blog: id는 m.blog.naver.com/ID (네이버 메이트 경제 분야 경기 남부 부동산 20곳, data/mate_benchmark.tsv) / cafe: menus 비우면 전체글(광고·가입·실거래 게시판 자동 제외) / youtube: 채널 ID(UC…) / hankyung: 랭킹
+# blog: id는 m.blog.naver.com/ID (네이버 메이트 경제 분야 경기 남부 부동산 20곳, data/mate_benchmark.tsv) / cafe: menus 비우면 전체글(광고·가입·실거래 게시판 자동 제외) / youtube: 채널 ID(UC…) / hankyung: 랭킹 / molit: 정책브리핑 부처 코드 / city: 지자체 보도자료(tools/source_scan.py CITY, 경기도·평택은 사이트 차단으로 제외)
 cafe	동사모	30221664	
 cafe	동탄2신도시분양정보	24095040	
 cafe	부동산스터디	12730407	174,295,72,222,287,265,212,210,208,67,88,218,214,281,282
@@ -8,6 +8,12 @@ youtube	역쟁이TV	UCn08VTUFQU0YVTPjZub6nXA
 hankyung	한국경제	ranking	
 kyeonggi	경기일보	popular	
 molit	국토부	A00006	
+molit	산업통상부	A00015	
+molit	기획예산처	A00040	
+city	화성시	hscity	
+city	수원시	suwon	
+city	용인시	yongin	
+city	성남시	seongnam	
 blog	슘페터	feargreed	
 blog	마데카솔	dailybuilder	
 blog	글로리	ceogirl7	
