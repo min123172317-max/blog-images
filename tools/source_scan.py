@@ -259,6 +259,8 @@ def score(items):
         t = x["title"]
         tr = t + " " + x.get("menu", "") if SEOUL_MODE else t   # 서울: 구 게시판 이름도 지역으로 침
         reg = 25 if REGION_TOP.search(tr) else 15 if REGION_OK.search(t) else 0
+        if not SEOUL_MODE and not reg and RAIL.search(t):
+            reg = 15   # 2026-11-25 v10: 철도는 지역을 가리지 않고 경기 남부 다음 점수(rules/topic.md 2-23)
         ov = 25 if any(len(seen[w]) >= 2 for w in set(tok.findall(t)) if w not in ("반도체", "서울", "한강")) else 0
         cr = 0 if "ratio" in x else min(10, x["comments"] / max(1, x["views"]) * 500)
         x["score"] = 0 if EXCLUDE.search(t) else round(min(40, x["rel"] * 10) + reg + ov + cr)
