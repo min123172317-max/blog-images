@@ -56,3 +56,4 @@
 | dapt.kr·nowon.kr·eminwon.nowon.kr | 프록시 403 | 2026-11-25 | 노원 정비사업 공람·고시 |
 | yuc.co.kr·eiec.kdi.re.kr·KDI pimac 일부 | 연결 실패·빈 페이지 | 2026-11-25 | 예타 보고서·유치권 자료 |
 | www.gjcity.go.kr 그림·suwon.go.kr ND_fileDownload PDF | 받는 중 끊김 | 2026-11-25 | 광주시 노선 그림·수원시 첨부 PDF |
+| info.korail.com (한국철도공사 광역열차 운영노선·통계자료) | 프록시 403(CONNECT tunnel failed) | 2026-11-25 | 수인분당선 노선도·역별 수송통계 → 수원시정연구원 보고서 그림으로 대체 |
