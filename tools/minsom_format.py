@@ -447,7 +447,7 @@ def review(ms, paras_all):
         return len([s for s in SENT_SPLIT.split(x) if s.strip()])
     shortp, longp, badsec = 0, 0, []
     for sec in ms["sections"]:
-        ps = [x for x in sec["paras"] if not x.startswith(TABLE_MARK)]
+        ps = [x for x in sec["paras"] if not x.startswith(TABLE_MARK) and x.replace(" ", "") != READ_MORE.replace(" ", "")]  # 2026-11-25: 맨 끝 '함께 읽으면' 줄은 문단 수·짧은 문단 점검에서 뺀다(서식 단계에서 자동 삽입되는 줄)
         shortp += sum(1 for x in ps if nsent(x) < 3)
         longp += sum(1 for x in ps if nsent(x) > 4)
         if not 3 <= len(ps) <= 5:
