@@ -405,14 +405,14 @@ def review(ms, paras_all):
     else:
         if len(ms["sections"]) > 6:
             warns.append("소제목 %d개 (적중형 5개, 검색형 3~4개)" % len(ms["sections"]))
-        if len(body) > 5000 or len(body) < 3000:
-            warns.append("분량 약 %d자 (기본 3,000~3,500자, 최대 5,000자, 3,000자 미만 금지)" % len(body))
+        if len(body) > 5000 or len(body) < 4000:   # 2026-11-24 민국: 기본 4,000~4,500자, "깊게"면 5,000자
+            warns.append("분량 약 %d자 (기본 4,000~4,500자, '깊게'면 5,000자까지, 4,000자 미만 금지)" % len(body))
     sizes = []
     for sec in ms["sections"]:
         n = len(sec["title"]) + sum(len(x.replace(TABLE_MARK, "")) for x in sec["paras"])
         sizes.append(n)
-        if n > 900:
-            warns.append("소제목 '%s' %d자 (최대 900자, 넘으면 둘로 나눔)" % (sec["title"][:15], n))
+        if n > 1100:   # 2026-11-24: 소제목 800~1,000자, 최대 1,100자
+            warns.append("소제목 '%s' %d자 (최대 1,100자, 넘으면 둘로 나눔)" % (sec["title"][:15], n))
     if len(sizes) > 1 and min(sizes) and max(sizes) > min(sizes) * 1.5:
         warns.append("소제목 길이 차이 큼: 가장 긴 것 %d자 / 가장 짧은 것 %d자 (1.5배 이내)" % (max(sizes), min(sizes)))
     if ms["sections"]:
