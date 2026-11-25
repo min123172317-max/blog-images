@@ -407,6 +407,10 @@ def review(ms, paras_all):
             warns.append("소제목 %d개 (적중형 5개, 검색형 3~4개)" % len(ms["sections"]))
         if len(body) > 5000 or len(body) < 4000:   # 2026-11-24 민국: 기본 4,000~4,500자, "깊게"면 5,000자
             warns.append("분량 약 %d자 (기본 4,000~4,500자, '깊게'면 5,000자까지, 4,000자 미만 금지)" % len(body))
+    # 2026-11-25 민국 긴급 수정: 소제목은 명사형·'~한 이유'로 끝냄. '~나요'·'~까요' 같은 '~요' 질문 어미 금지.
+    yo = [s["title"] for s in ms["sections"] if re.sub(r"[?？\s]+$", "", s["title"]).endswith("요")]
+    if yo:
+        warns.append("소제목 '~요' 어미 %d개 (명사형이나 '~한 이유'로 끝냄) 예: %s" % (len(yo), yo[0][:25]))
     sizes = []
     for sec in ms["sections"]:
         n = len(sec["title"]) + sum(len(x.replace(TABLE_MARK, "")) for x in sec["paras"])
