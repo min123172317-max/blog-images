@@ -403,8 +403,8 @@ def review(ms, paras_all):
         if not 3500 <= len(body) <= 5500:
             warns.append("분량 약 %d자 (서울 글은 3,500~5,500자)" % len(body))
     else:
-        if len(ms["sections"]) > 6:
-            warns.append("소제목 %d개 (적중형 5개, 검색형 3~4개)" % len(ms["sections"]))
+        if len(ms["sections"]) != 5:   # 2026-11-25 민국 긴급: 소제목은 무조건 5개(소개 2 + 인사이트 3), 예외 없음
+            warns.append("소제목 %d개 (무조건 5개: 소개 2 + 인사이트 3)" % len(ms["sections"]))
         if len(body) > 5000 or len(body) < 4000:   # 2026-11-24 민국: 기본 4,000~4,500자, "깊게"면 5,000자
             warns.append("분량 약 %d자 (기본 4,000~4,500자, '깊게'면 5,000자까지, 4,000자 미만 금지)" % len(body))
     sizes = []
@@ -422,10 +422,10 @@ def review(ms, paras_all):
     arts = set(re.findall(r"제\d+조(?:의\d+)?", text_only))
     if len(arts) > 1:
         warns.append("법 조문 번호 %d종 (%s) — 글당 1개" % (len(arts), ", ".join(sorted(arts))))
-    if not ms["seoul"]:   # 2026-11-19 민국 확정: 투자 유의사항은 4~5문장
-        nn = len([s for s in SENT_SPLIT.split(ms["notice"].strip()) if s.strip()])
-        if nn > 5:
-            warns.append("투자 유의사항 %d문장 (4~5문장으로 줄여야 함)" % nn)
+    if not ms["seoul"]:   # 2026-11-25 민국 긴급: 투자 유의사항은 300자 이내(분량에는 포함하지 않음)
+        nl = len(ms["notice"].strip())
+        if nl > 300:
+            warns.append("투자 유의사항 %d자 (300자 이내로 줄여야 함)" % nl)
     ntab = sum(1 for x in paras_all if x.startswith(TABLE_MARK))
     if ntab > 1:
         warns.append("표 %d개 (글당 최대 1개)" % ntab)
