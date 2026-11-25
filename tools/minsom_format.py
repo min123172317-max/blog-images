@@ -462,6 +462,10 @@ def review(ms, paras_all):
             badsec.append("%s %d문단" % (sec["title"][:10], len(ps)))
     if shortp:
         warns.append("소제목 안 1~2문장 문단 %d개 (문단은 3~4문장, 짧은 꼬리 문단은 앞 문단에 합침)" % shortp)
+    # 2026-11-25 민국: "영향이 작다"로 끝내지 말고 영향이 큰 곳을 소개(write.md 3-8 독자 영향 시험)
+    _body = "\n".join("\n".join(sec["paras"]) for sec in ms["sections"])
+    if re.search(r"영향(은|이)\s*(작|크지 않|미미)", _body):
+        warns.append("'영향이 작다' 표현 — 영향이 큰 동네·사업장을 근거와 함께 소개하는 문장으로 바꿈(write.md 3-8)")
     if longp:
         warns.append("문장이 5개 이상인 문단 %d개 (문단은 3~4문장)" % longp)
     if badsec:
