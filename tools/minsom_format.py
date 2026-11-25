@@ -277,6 +277,9 @@ def build(ms, spec):
         for p, text in enumerate(blocks[b]):
             if text.startswith(TABLE_MARK):
                 out.append(render_table(text[len(TABLE_MARK):]))
+                for url in photos.get((b, p), []):   # 2026-11-25: 표 뒤 사진이 빠지던 오류 수정
+                    out.append('<p style="margin:0;text-align:center;"><img src="%s" alt="" '
+                               'style="max-width:100%%;height:auto;"></p>' % url)
                 continue
             sents = SENT_SPLIT.split(text)
             colored = dict(marks.get((b, p), []))
