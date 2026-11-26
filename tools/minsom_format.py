@@ -395,6 +395,34 @@ def gate_check(manuscript_path, ms):
     return warns
 
 
+def gate_summary(manuscript_path):
+    """2026-11-26 민국: 점검 결과에 '인사이트를 썼는지 안 썼는지'를 소제목별로 꼭 보여 준다.
+    인사이트관문.txt 기준으로 3·4·5번 각각 '있음'(새 문장 앞부분) 또는 '없음'(이유)을 한 줄로 만든다."""
+    import os
+    gp = os.path.join(os.path.dirname(os.path.abspath(manuscript_path)), "인사이트관문.txt")
+    if not os.path.exists(gp):
+        return "인사이트 판정: 3·4·5번 모두 없음(인사이트관문.txt 없음)"
+    rows = {}
+    for line in open(gp, encoding="utf-8"):
+        f = [x.strip() for x in line.strip().split("|")]
+        if len(f) >= 6 and f[0] in ("3", "4", "5"):
+            rows[f[0]] = f
+    out = []
+    for n in ("3", "4", "5"):
+        f = rows.get(n)
+        if not f:
+            out.append("%s번 없음(관문 줄 없음)" % n)
+        elif not all(f[1:5]):
+            out.append("%s번 없음(빈칸)" % n)
+        elif len([x for x in f[3].split(";") if x.strip()]) < 2:
+            out.append("%s번 없음(근거 1개)" % n)
+        elif not f[5].startswith("아니오"):
+            out.append("%s번 없음(이미 있는 문장)" % n)
+        else:
+            out.append("%s번 있음(%s)" % (n, f[2][:20]))
+    return "인사이트 판정: " + " / ".join(out)
+
+
 def review(ms, paras_all, wide=False):
     """원고 점검. (경고 목록, 분량) 반환. 원고는 고치지 않는다."""
     warns = []
@@ -562,6 +590,7 @@ def main():
         warns += gate_check(a.manuscript, ms)
     if a.check:
         print("점검: 소제목 %d개 / 원고 분량 약 %d자(태그·유의사항 제외)" % (len(ms["sections"]), nbody))
+        print(gate_summary(a.manuscript))   # 2026-11-26 민국: 인사이트 유무를 항상 표시
         if not warns:
             print("통과 - 확인 필요 없음")
     else:
