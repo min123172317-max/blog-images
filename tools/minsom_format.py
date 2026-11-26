@@ -363,7 +363,39 @@ AI_PHRASES = ["셈입니다", "라는 점입니다", "주목할 ", "눈여겨볼
 READER_TOWNS = "동탄|화성|병점|봉담|향남|수원|영통|광교|매교|용인|기흥|수지|처인|남사|성남|분당|판교|야탑|위례|평택|지제|고덕|오산"
 
 
-def review(ms, paras_all):
+def gate_check(manuscript_path, ms):
+    """2026-11-26 민국 확정 최상위 규칙(rules/write.md 0-1): 3·4·5번 소제목 인사이트 관문.
+    원고와 같은 폴더의 '인사이트관문.txt'를 읽어 3·4·5번이 모두 채워졌는지 기계 점검한다.
+    줄 양식: 번호|발견(어느 자료 어디)|새 문장|근거1;근거2|독자 영향(어느 동네·무엇·언제)|기사·문서에 이미 있는 문장인가(아니오)"""
+    import os
+    warns = []
+    gp = os.path.join(os.path.dirname(os.path.abspath(manuscript_path)), "인사이트관문.txt")
+    if not os.path.exists(gp):
+        return ["인사이트관문.txt 없음 — 3·4·5번 인사이트 관문을 통과하기 전에는 원고를 보여주지 않음(write.md 0-1)"]
+    rows = {}
+    for line in open(gp, encoding="utf-8"):
+        f = [x.strip() for x in line.strip().split("|")]
+        if len(f) >= 6 and f[0] in ("3", "4", "5"):
+            rows[f[0]] = f
+    for n in ("3", "4", "5"):
+        f = rows.get(n)
+        if not f:
+            warns.append("인사이트 관문 %s번 줄 없음 (write.md 0-1)" % n)
+            continue
+        if not all(f[1:5]):
+            warns.append("인사이트 관문 %s번 빈칸 있음 — 발견·새 문장·근거·독자 영향 모두 필요" % n)
+        if len([x for x in f[3].split(";") if x.strip()]) < 2:
+            warns.append("인사이트 관문 %s번 근거 자료 2개 미만 (정보 전달로 간주)" % n)
+        if not f[5].startswith("아니오"):
+            warns.append("인사이트 관문 %s번 '이미 있는 문장' — 문서·기사 내용을 옮긴 정보 전달임" % n)
+    if len(ms["sections"]) >= 5:
+        for n in (3, 4, 5):
+            if n == 3 and re.search(r"(시점|일정|노선도|정거장|위치|개통|완공 순서|출근 경로)$", ms["sections"][2]["title"]):
+                warns.append("3번 소제목 이름이 정보형(시점·일정·노선도 등) — 인사이트 소제목인지 다시 확인")
+    return warns
+
+
+def review(ms, paras_all, wide=False):
     """원고 점검. (경고 목록, 분량) 반환. 원고는 고치지 않는다."""
     warns = []
     body = "\n".join([ms["title"]] + ms["summary"] + [s["title"] for s in ms["sections"]] +
@@ -375,8 +407,12 @@ def review(ms, paras_all):
         warns.append("제목 %d자 (40자 이내여야 함)" % len(ms["title"]))
     if len(re.findall(r"\d[\d,.]*", ms["title"])) > 2 or "→" in ms["title"]:
         warns.append("제목에 숫자가 많거나 '→'가 있음 (숫자는 1개, 나열 금지)")
-    if not ms["seoul"] and not re.search(READER_TOWNS, ms["title"]):
-        warns.append("제목에 독자 동네 이름(동탄·수원·용인·화성 등)이 없음 — 경기남부 밖 주제는 '동탄' 필수")
+    if wide:
+        # 2026-11-26 민국: 넓히기·특집 글은 새 독자 유입용이라 동탄을 끌어오지 않는다(write.md 0-2)
+        if re.search("동탄", "\n".join([ms["title"]] + ms["summary"] + paras_all)):
+            warns.append("--wide(넓히기) 글에 '동탄'이 있음 — 그 지역 자체 인사이트로만 씀(write.md 0-2)")
+    elif not ms["seoul"] and not re.search(READER_TOWNS, ms["title"]):
+        warns.append("제목에 독자 동네 이름(동탄·수원·용인·화성 등)이 없음 — 경기남부 밖 주제는 '동탄' 필수(넓히기 글은 --wide)")
     # ---- 금지 표기 ----
     for w in BANNED:
         n = body.count(w)
@@ -505,6 +541,7 @@ def main():
     ap.add_argument("spec", nargs="?")
     ap.add_argument("-o", "--out", default="index.html")
     ap.add_argument("--check", action="store_true", help="서식 페이지를 만들지 않고 원고 점검만")
+    ap.add_argument("--wide", action="store_true", help="넓히기·특집 글: 제목 동탄 필수 검사 대신 동탄 사용 금지 검사(write.md 0-2)")
     a = ap.parse_args()
 
     try:
@@ -519,8 +556,10 @@ def main():
         page, warns = build(ms, spec)
         with open(a.out, "w", encoding="utf-8") as f:
             f.write(page)
-    more, nbody = review(ms, paras_all)
+    more, nbody = review(ms, paras_all, a.wide)
     warns += more
+    if a.check:   # 민솜·서울 모두 적용(2026-11-26 민국 "앞으로도")
+        warns += gate_check(a.manuscript, ms)
     if a.check:
         print("점검: 소제목 %d개 / 원고 분량 약 %d자(태그·유의사항 제외)" % (len(ms["sections"]), nbody))
         if not warns:
