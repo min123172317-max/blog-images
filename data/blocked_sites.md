@@ -35,6 +35,7 @@
 | cis.seoul.go.kr (서울시 건설알림이, 공사 결재문서·공정) | 연결 끊김(connection reset) 2회 | 2026-11-18 | 동북선 서울 글 |
 | rt.molit.go.kr (국토부 실거래가 공개시스템) | 첫 페이지는 200, 다운로드(/pt/xls/xls.do)는 웹 방화벽 차단 페이지 | 2026-11-18 | 판교·분당·송파·동탄 단지 실거래가 |
 | reb.or.kr (한국부동산원) | 연결 끊김(Connection reset) 2회 | 2026-11-19 | 주간아파트가격동향 PDF(시군구 변동률 지도) |
+| data-api.kbland.kr·data.kbland.kr·kbland.kr (KB부동산 통계) | 2026-11-27 허용 목록에 data-api·data 추가했으나 서버가 TLS 연결 뒤 자동 접속을 끊음(Broken pipe). 브라우저 위장 우회는 쓰지 않음 → KB경영연구소 www.kbfg.com 「KB주택시장리뷰」 PDF로 대체(열림) | 2026-11-27 | 매수우위지수·전세가율 시계열 |
 
 ## 참고: 불안정하지만 열리는 곳
 - law.go.kr(국가법령정보센터) 법령 본문: GET 페이지에서 lsiSeq·efYd 추출 → LSW/lsInfoR.do에 POST하면 조문 전체가 옴. tools/law_fetch.py가 자동 처리(2026-11-18).
