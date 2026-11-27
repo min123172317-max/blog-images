@@ -7,7 +7,7 @@ maxp = int(sys.argv[4]) if len(sys.argv) > 4 else 4
 for p in range(1, maxp + 1):
     u = f"https://www.korea.kr/briefing/pressReleaseList.do?startDate={s}&endDate={e}&pageIndex={p}"
     try:
-        t = subprocess.run(["curl", "-sSL", "--retry", "2", "-m", "40", u], capture_output=True, text=True, errors="ignore").stdout
+        t = subprocess.run(["curl", "-sSL", "--retry", "4", "--retry-all-errors", "-m", "40", u], capture_output=True, text=True, errors="ignore").stdout
     except Exception as ex:
         print("err", ex); continue
     found = 0
