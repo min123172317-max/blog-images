@@ -454,6 +454,27 @@ def review(ms, paras_all, wide=False):
     hits = [(w, text_only.count(w)) for w in AI_PHRASES if text_only.count(w)]
     if sum(n for _, n in hits) >= 2:
         warns.append("AI 티 표현 %d곳 (%s) — 사실 문장으로 바꿈" % (sum(n for _, n in hits), ", ".join("%s×%d" % h for h in hits)))
+    # ---- 빈 문장(2026-11-27 민국: "없으면 굳이 말을 안 해도 되는 거야") — 1곳이라도 알림 ----
+    empty = []
+    for s in SENT_SPLIT.split(" ".join(x for x in paras_all if not x.startswith(TABLE_MARK))):
+        s = s.strip()
+        if not s:
+            continue
+        official = re.search(r"(밝혔|해명|답했|답변|설명했|공고했)", s)   # 기관이 공식으로 밝힌 '미정'은 사실이라 제외
+        if not official and (re.search(r"(자료|문서|계획|발표)(에|에는|에도) (없|나오지 않|담기지 않|적혀 있지 않)", s)
+                or re.search(r"아직 (공개|확정|발표|결정|정해지)(되지|지) 않았", s)
+                or re.search(r"확정 전입니다|알려지지 않았습니다|확인되지 않았습니다", s)):
+            empty.append(("정보 부재 고지", s))
+        elif (re.search(r"만으로는? .{0,20}(수 없습니다|어렵습니다|이릅니다)", s)
+                or re.search(r"(판단|단정|결론)(은|을|하기|할 수).{0,25}(수 없습니다|어렵습니다|이릅니다)", s)
+                or "지켜봐야" in s):
+            empty.append(("판단 보류", s))
+        elif (re.search(r"1차(로|적으로).{0,30}최종", s)
+                or re.search(r"각각 .{0,40}(확인해야|정해집니다|갈립니다)", s)):
+            empty.append(("정리형 대구", s))
+    if empty:
+        warns.append("빈 문장 %d곳 (지워도 사실이 줄지 않는 문장은 뺌, write.md 3-6): %s" % (
+            len(empty), " / ".join("[%s] %s…" % (k, s[:30]) for k, s in empty[:3])))
     na = len(re.findall(r"이 아니라|가 아니라", text_only))
     if na > 2:
         warns.append("'A가 아니라 B' 문형 %d곳 (글당 2곳 이내)" % na)
