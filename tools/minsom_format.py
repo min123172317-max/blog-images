@@ -382,6 +382,19 @@ def gate_check(manuscript_path, ms):
         if not f:
             warns.append("인사이트 관문 %s번 줄 없음 (write.md 0-1)" % n)
             continue
+        # 2026-11-28 민국(write.md 0-0): 8칸 양식 = 번호|독자 피부 질문|현실 주장|발견|새 문장|근거|독자 영향|아니오
+        if len(f) < 8:
+            warns.append("인사이트 관문 %s번 옛 6칸 양식 — '독자 피부 질문|현실 주장' 두 칸을 앞에 넣어 8칸으로(write.md 0-0)" % n)
+            f = f + [""] * (8 - len(f))
+        else:
+            q, claim = f[1], f[2]
+            if not re.search(r"(내 |내가|우리|얼마|어디|언제|어떻게|무엇|몇 )", q):
+                warns.append("인사이트 관문 %s번 독자 피부 질문이 독자 말투가 아님(내·우리·얼마·어디·언제) — write.md 0-0" % n)
+            if not claim or claim == f[4]:
+                warns.append("인사이트 관문 %s번 현실 주장 칸이 비었거나 새 문장과 같음 — write.md 0-0" % n)
+            elif re.search(r"(흡수|충분|여유가 생|이주하면 된|정부 계산상|공급될 예정)", claim):
+                warns.append("인사이트 관문 %s번 현실 주장이 교과서형(흡수·충분·여유·정부 계산 그대로) — 현실 지표로 검증한 주장으로(write.md 0-0)" % n)
+            f = [f[0]] + f[3:]   # 아래 기존 점검은 발견|새 문장|근거|독자 영향|아니오 순서
         if not all(f[1:5]):
             warns.append("인사이트 관문 %s번 빈칸 있음 — 발견·새 문장·근거·독자 영향 모두 필요" % n)
         if len([x for x in f[3].split(";") if x.strip()]) < 2:
@@ -389,6 +402,13 @@ def gate_check(manuscript_path, ms):
         if not f[5].startswith("아니오"):
             warns.append("인사이트 관문 %s번 '이미 있는 문장' — 문서·기사 내용을 옮긴 정보 전달임" % n)
     if len(ms["sections"]) >= 5:
+        # 2026-11-28 민국(write.md 0-0): 인사이트 소제목의 교과서 표현 점검
+        tb = r"(자연스럽게 흡수|흡수할 여력|흡수된다|흡수됩니다|공급이 충분|여유가 생깁|이주하면 됩니다|받아줄 그릇|정부 계산상)"
+        for n in (3, 4, 5):
+            body = " ".join(ms["sections"][n - 1].get("paras", [])) if isinstance(ms["sections"][n - 1].get("paras"), list) else str(ms["sections"][n - 1])
+            hits = sorted(set(re.findall(tb, body)))
+            if hits:
+                warns.append("%d번 인사이트 소제목에 교과서 표현 %s — 정부 계산을 현실 지표(전세 매물·전월세 가격·통근·학군)로 검증한 주장인지 확인(write.md 0-0)" % (n, ",".join(hits)))
         for n in (3, 4, 5):
             if n == 3 and re.search(r"(시점|일정|노선도|정거장|위치|개통|완공 순서|출근 경로)$", ms["sections"][2]["title"]):
                 warns.append("3번 소제목 이름이 정보형(시점·일정·노선도 등) — 인사이트 소제목인지 다시 확인")
@@ -412,14 +432,17 @@ def gate_summary(manuscript_path):
         f = rows.get(n)
         if not f:
             out.append("%s번 없음(관문 줄 없음)" % n)
-        elif not all(f[1:5]):
+        elif len(f) < 8:
+            out.append("%s번 없음(독자 피부 질문·현실 주장 칸 없음, 0-0)" % n)
+            continue
+        elif not all(f[1:8]):
             out.append("%s번 없음(빈칸)" % n)
-        elif len([x for x in f[3].split(";") if x.strip()]) < 2:
+        elif len([x for x in f[5].split(";") if x.strip()]) < 2:
             out.append("%s번 없음(근거 1개)" % n)
-        elif not f[5].startswith("아니오"):
+        elif not f[7].startswith("아니오"):
             out.append("%s번 없음(이미 있는 문장)" % n)
         else:
-            out.append("%s번 있음(%s)" % (n, f[2][:20]))
+            out.append("%s번 있음(질문: %s / 주장: %s)" % (n, f[1][:18], f[2][:20]))
     return "인사이트 판정: " + " / ".join(out)
 
 
